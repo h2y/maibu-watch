@@ -251,7 +251,8 @@ static P_Window init_window(void)
  */
 int main()
 {
-	
+	simulator_init();
+
 	app_watch_data(0);
 	/*创建显示表盘窗口*/
 	P_Window p_window = init_window();
@@ -263,6 +264,7 @@ int main()
 		/*注册一个事件通知回调，当有时间改变时，立即更新时间*/
 		maibu_service_sys_event_subscribe(app_watch_time_change);
 	}
-		
+
+	simulator_wait();
 	return 0;
 }

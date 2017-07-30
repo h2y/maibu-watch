@@ -698,5 +698,3 @@ int main(void)
 }
 
 #endif
-
-

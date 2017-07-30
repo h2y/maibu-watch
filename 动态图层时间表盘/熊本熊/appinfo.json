@@ -5,7 +5,6 @@
   "version": "1.0.0",
   "watchface": "true",
   "resources": [
-      
       {
         "type": "bmp",
         "name": "RES_BITMAP_WATCHFACE_NUMBER_0",

@@ -11,8 +11,6 @@
  *        Created:  2015年03月27日 10时52分52秒
  *
  * =====================================================================================
- *
- * =====================================================================================
  * 
  *   MODIFICATION HISTORY :
  *    
@@ -24,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#undef LINUX
 
 #ifdef LINUX
 #include <unistd.h>
@@ -153,6 +152,7 @@ static P_Window init_jobs_window()
 
 int main()
 {
+    simulator_init();
 
 #ifdef LINUX	
 	/*非APP编写*/	
@@ -206,8 +206,6 @@ int main()
 
 #endif
 
+    simulator_wait();
 	return 0;
-
 }
-
-

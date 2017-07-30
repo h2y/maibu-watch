@@ -1,63 +1,9 @@
-/*
- * =====================================================================================
- * 
- *     Modulename:
- *       Filename:  app_mwd_watch.c
- *
- *    Description:  显示月周日表盘 
- *    Corporation:
- * 
- *         Author:  gliu (), gliu@damaijiankang.com
- *        Created:  2015年03月27日 11时10分11秒
- *
- * =====================================================================================
- *
- * =====================================================================================
- * 
- *   MODIFICATION HISTORY :
- *    
- *		     DATE :
- *		     DESC :
- * =====================================================================================
- */	
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-
-
-#ifdef LINUX
-#include <unistd.h>
-#include <time.h>
-#include <pthread.h>
-#include "linux_screen_show.h"
-#include "os_store_manage.h"
-#include "os_time.h"
-#include "os_res_bitmap.h"
-#include "os_sys_app_id.h"
-#include "os_memory_manage.h"
-#include "res_user_bitmap.h"
-#include "os_sys_event.h"
-#include "os_app_manage.h"
-#include "window_stack.h"
-#include "window.h"
-#include "screen_show.h"
-#include "matrix.h"
-#include "plug_status_bar.h"
-#include "res_bitmap_base.h"
-#include <kernel_header.h>
-#include <os_res_bitmap.h>
-#include <os_app.h>
-
-#else
-
-
 #include "maibu_res.h"
 #include "maibu_sdk.h"
-
-#endif
-
-
 
 
 
@@ -92,7 +38,6 @@ static int8_t g_app_mwd_wmd_layer_id = -1;
 #define MWD_WMD_SIZE_W		119
 
 
-
 /*年*/
 int16_t g_official_year = -1;
 /*月*/
@@ -100,15 +45,13 @@ int8_t g_official_month = -1;
 /*日*/
 int8_t g_official_day = -1;
 
-void app_mwd_watch_update()
-{ 
 
+void app_mwd_watch_update()
+{
 	/*根据窗口ID获取窗口句柄*/
 	P_Window p_window = app_window_stack_get_window_by_id(g_app_mwd_window_id);	
 	if (NULL == p_window)
-	{
-		return ;
-	}
+		return;
 
 	struct date_time datetime;
 	app_service_get_datetime(&datetime);
@@ -144,7 +87,6 @@ void app_mwd_watch_update()
 
 void app_mwd_watch_time_change(enum SysEventType type, void *context)
 {
-
 	/*时间更改*/
 	if (type == SysEventTypeTimeChange)
 	{
@@ -154,15 +96,12 @@ void app_mwd_watch_time_change(enum SysEventType type, void *context)
 
 
 
-
 P_Window init_mwd_window()
 {
 	P_Window p_window = NULL;
 	p_window = app_window_create();
 	if (NULL == p_window)
-	{
 		return NULL;
-	}
 
 	/*添加背景图片图层*/
 	GRect frame_bg = {{MWD_BG_ORIGIN_X, MWD_BG_ORIGIN_Y}, {MWD_BG_SIZE_H, MWD_BG_SIZE_W}};
@@ -209,64 +148,16 @@ P_Window init_mwd_window()
 	maibu_service_sys_event_subscribe(app_mwd_watch_time_change);
 
 	return p_window;
-
 }
-
-
 
 
 int main()
 {
-
-#ifdef LINUX	
-
-	/*非APP编写*/	
-	screen_init(SCREEN_ROW_NUMS,SCREEN_COL_NUMS);
-	os_store_manage_init();	
-	window_stack_init();
-	SHOW;
-#endif
-
+    simulator_init();
 
 	P_Window p_window = init_mwd_window(); 
 	g_app_mwd_window_id = app_window_stack_push(p_window);
 
-
-
-#ifdef LINUX
-	SHOW;
-	/*非APP编写*/	
-	while (1)
-	{
-		char input;	
-	
-		/*输入操作*/
-		scanf("%c", &input);
-		if (input == 'q')
-		{
-			break;	
-		}
-		else if (input == 'c')
-		{
-	
-		}
-		else if (input == 'g')
-		{
-			break;
-		}
-	
-	}	
-
-	window_stack_destory();
-	screen_destory();
-	os_store_manage_destory();
-
-	SHOW;
-
-
-#endif
-
+    simulator_wait();
 	return 0;
-
 }
-

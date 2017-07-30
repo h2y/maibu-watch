@@ -462,7 +462,7 @@ void data_handler_per_day()
 
 
 
-void  time_change (enum SysEventType type, void *context)
+void time_change(enum SysEventType type, void *context)
 {
 	/*时间更改*/
 	if (type == SysEventTypeTimeChange)
@@ -522,7 +522,7 @@ void get_city_info_callback(enum ERequestPhone  type,void * context)
 		{
 			int8_t *context_city_name_point = (int8_t *)context + 4;	
 					
-			memcpy(g_city,context_city_name_point,20);
+			memcpy(g_city, context_city_name_point, 20);
 			g_city[19]='\0';
 			
 			request_weather_info(g_city);
@@ -584,7 +584,7 @@ void weather_info_callback(const uint8_t *buff,uint16_t size)
 void request_weather_info(char * city_name)
 {
 	char url[256] = {0};
-	sprintf(url,"%s",WEATHER_URL);
+	sprintf(url, "%s", WEATHER_URL);
 	if(city_name != NULL)
 	{
 		int i = 0,j = 0;
@@ -592,7 +592,6 @@ void request_weather_info(char * city_name)
 		{
 			sprintf(url,"%s%%%x",url,(unsigned char)city_name[i]);
 		}
-		
 	}
 	else if(strlen(city_name) < CITY_EMPTY)
 	{
@@ -601,7 +600,7 @@ void request_weather_info(char * city_name)
 	}
 	
 	maibu_comm_register_web_callback(weather_info_callback);
-	g_comm_id_web_weather = maibu_comm_request_web(url,WEATHER_KEY,5*60*get_front_or_back_flag());
+	g_comm_id_web_weather = maibu_comm_request_web(url, WEATHER_KEY, 5*60*get_front_or_back_flag());
 	
 }
 
@@ -694,18 +693,16 @@ int main(void)
 		
 		request_time = 5 * 1000;//在没有获取过数据的情况下5秒获取一次数据
 		g_callback_request_flag = 1;//设置快速查询标志
-			
 	}
 	g_start_seconds_flag = 1;
 
-	time_change(SysEventTypeTimeChange,NULL);
+	time_change(SysEventTypeTimeChange, NULL);
 	
 	//判断是否距离上次成功获得数据超过5分钟
 	if(get_time_out_flag(5)||(g_weather_bmp_key == -1))
 	{
 		//请求GPS数据并注册GPS数据请求超时回调
 		request_get_city_info();
-		
 	}
 
 	//注册定时查询函数
@@ -722,4 +719,3 @@ int main(void)
 	return 0;
 
 }
-

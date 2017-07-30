@@ -196,7 +196,7 @@ static P_Window init_watch(void)
 int main()
 {
 	/*模拟器模拟显示时打开，打包时屏蔽*/
-	//simulator_init();
+	simulator_init();
 
 	/*创建显示表盘窗口*/
 	P_Window p_window = init_watch();
@@ -207,7 +207,7 @@ int main()
 	}
 	
 	/*模拟器模拟显示时打开，打包时屏蔽*/
-	//simulator_wait();
+	simulator_wait();
 
 	return 0;
 }
