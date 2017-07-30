@@ -6,7 +6,6 @@
 #include "maibu_res.h"
 
 
-
 /*标志位*/
 
 //窗口ID
@@ -170,18 +169,13 @@ void request_weather_info(char * city_name);
 
 int32_t get_date_flag(void)
 {
-
 	struct date_time datetime;
 	app_service_get_datetime(&datetime);
 
 	if((datetime.hour >= 7)&&(datetime.hour < 19))
-	{
 		return 1;
-	}
 	else
-	{
 		return 0;
-	}
 }
 
 uint32_t get_weather_icon(char * str)
@@ -203,7 +197,8 @@ uint32_t get_weather_icon(char * str)
 	{
 		weather_icon_key = RES_BITMAP_WATCHFACE_WEATHER_CLOUDY;
 	}
-	else if((memcmp(str,WEATHER_FOG_1,strlen(WEATHER_FOG_1)) == 0 )||(memcmp(str,WEATHER_FOG_2,strlen(WEATHER_FOG_2)) == 0 ))
+	else if( (memcmp(str,WEATHER_FOG_1,strlen(WEATHER_FOG_1)) == 0 ) ||
+	         (memcmp(str,WEATHER_FOG_2,strlen(WEATHER_FOG_2)) == 0 ) )
 	{
 		weather_icon_key = RES_BITMAP_WATCHFACE_WEATHER_FOG;
 	}
@@ -461,7 +456,6 @@ void data_handler_per_day()
 }
 
 
-
 void time_change(enum SysEventType type, void *context)
 {
 	/*时间更改*/
@@ -532,7 +526,7 @@ void get_city_info_callback(enum ERequestPhone  type,void * context)
 
 
 //请求天气数据回调
-void weather_info_callback(const uint8_t *buff,uint16_t size)
+void weather_info_callback(const uint8_t *buff, uint16_t size)
 {
 	char buffer[40] = {0};
 
@@ -543,17 +537,14 @@ void weather_info_callback(const uint8_t *buff,uint16_t size)
 	g_request_count = 0;//清空请求计数
 	g_callback_request_flag = 0; //清空快速查询标志
 	
-	if(maibu_get_json_str(buff, "info", buffer,sizeof(weather_info)) != JSON_ERROR )
+	if(maibu_get_json_str(buff, "info", buffer, sizeof(weather_info)) != JSON_ERROR )
 	{
 		//防止数据为空导致的数据清空
-		maibu_get_json_str(buff, "info", weather_info,sizeof(weather_info));
+		maibu_get_json_str(buff, "info", weather_info, sizeof(weather_info));
 		g_weather_bmp_key = get_weather_icon(weather_info);
-		
 	}
 	else
-	{	
 		return;
-	}
 
 	memset(g_show_more_str_temperature,0,sizeof(g_show_more_str_temperature));
 	memset(g_show_more_str_PM2_5,0,sizeof(g_show_more_str_PM2_5));
@@ -577,7 +568,6 @@ void weather_info_callback(const uint8_t *buff,uint16_t size)
 	}
 	
 	window_reloading();
-	
 }
 
 //请求天气数据
@@ -588,7 +578,7 @@ void request_weather_info(char * city_name)
 	if(city_name != NULL)
 	{
 		int i = 0,j = 0;
-		for(i;(city_name[i] != '\0')&&(j < sizeof(url)) ;++i)
+		for(;(city_name[i] != '\0') ;++i)
 		{
 			sprintf(url,"%s%%%x",url,(unsigned char)city_name[i]);
 		}
@@ -601,7 +591,6 @@ void request_weather_info(char * city_name)
 	
 	maibu_comm_register_web_callback(weather_info_callback);
 	g_comm_id_web_weather = maibu_comm_request_web(url, WEATHER_KEY, 5*60*get_front_or_back_flag());
-	
 }
 
 
@@ -627,7 +616,6 @@ void app_weather_update_timer_callback(date_time_t tick_time, uint32_t millis, v
 	}
 	else if((g_request_count >= 12)&&(g_callback_request_flag == 1))
 	{   //快速查询的状态下大于12次(1分钟)就退出快速查询
-        
         g_request_count = 0;
 		g_callback_request_flag = 0;
 	}
@@ -648,25 +636,19 @@ void app_weather_update_timer_callback(date_time_t tick_time, uint32_t millis, v
 void weather_comm_result_callback(enum ECommResult result, uint32_t comm_id, void *context)
 {
 	/*如果上一次请求城市通讯失败，并且通讯ID相同，则重新发送*/
-		if ((result == ECommResultFail) && (comm_id == g_comm_id_get_city))
-		{
-			
-			if(strlen(g_city)>= CITY_EMPTY)
-			{
-				request_weather_info(g_city);
-			}
-			else
-			{
-				g_comm_id_get_city = maibu_comm_request_phone(ERequestPhoneSelfDefine,(void *)&get_city_context,34);
-			}
-		}
+    if ((result == ECommResultFail) && (comm_id == g_comm_id_get_city))
+    {
+        if(strlen(g_city)>= CITY_EMPTY)
+            request_weather_info(g_city);
+        else
+            g_comm_id_get_city = maibu_comm_request_phone(ERequestPhoneSelfDefine,(void *)&get_city_context,34);
+    }
 
-		/*如果上一次请求WEB通讯失败，并且通讯ID相同，则重新发送*/
-		if ((result == ECommResultFail) && (comm_id == g_comm_id_web_weather))
-		{
-	
-			request_weather_info(g_city);
-		}
+    /*如果上一次请求WEB通讯失败，并且通讯ID相同，则重新发送*/
+    if ((result == ECommResultFail) && (comm_id == g_comm_id_web_weather))
+    {
+        request_weather_info(g_city);
+    }
 	
 }
 #endif
@@ -717,5 +699,4 @@ int main(void)
 	g_window_id = app_window_stack_push(p_window);
 
 	return 0;
-
 }

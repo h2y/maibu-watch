@@ -1,4 +1,3 @@
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -6,7 +5,7 @@
 #include "maibu_sdk.h"
 #include "maibu_res.h"
 
-static int32_t g_window_id             = -1;
+static int32_t g_window_id            = -1;
 
 static int8_t g_layer_id_waiting      = -1;
 static int8_t g_layer_id_waiting_str  = -1;
@@ -458,7 +457,6 @@ void weather_comm_result_callback(enum ECommResult result, uint32_t comm_id, voi
 	}
 	
 }
-
 #endif
 
 void watchapp_comm_callback(enum ESyncWatchApp type, uint8_t *buf, uint16_t len)
