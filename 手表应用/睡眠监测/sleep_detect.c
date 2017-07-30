@@ -3,9 +3,7 @@
 
 
 #define LEVEL_1			120
-
 #define LEVEL_2			50
-
 #define LEVEL_3			12
 
 typedef enum ProgressType
@@ -26,12 +24,8 @@ typedef struct SleepInfo
 	uint8_t reserved;//保留位
 	
 	struct date_time sleepTime;//入睡时间
-	
 	struct date_time wakeTime;//起床时间
-	
 }SleepInfo;
-
-
 
 
 SleepInfo week_info[7] = {0};
@@ -39,28 +33,20 @@ SleepInfo week_info[7] = {0};
 
 //---------------------界面使用的参数---------------------
 static int32_t g_window_id = -1;
-//static int32_t g_layer_id_hm = -1;
-//static int32_t g_layer_id_wmd = -1;
-//static int32_t g_layer_id_xyz = -1;
 
 static uint8_t BGM_flag = 0;
 
 #define APP_DEBUGx
 
 #ifdef APP_DEBUG
-
 #define DEBUG		os_printk
-
 #else
-
 #define DEBUG(...)
-
 #endif
 
 
 #define  ACT_THRESHOLD_1		10
 #define  ACT_THRESHOLD_2		18
-
 
 
 void update_display(void);
@@ -119,9 +105,7 @@ void button_select_up(void *context)
 {
 	P_Window p_window = (P_Window)context;		
 	if (p_window == NULL)
-	{
-		return;	
-	}	
+		return;
 
 	BGM_flag = (BGM_flag +1)%2;
 	update_display();
@@ -153,7 +137,6 @@ int8_t create_layer_text(P_Window p_window,char* str,GRect frame,enum GAlign ali
 	P_Layer Layer_text = app_layer_create_text(&lt);
 	app_layer_set_bg_color(Layer_text, color);
 	return app_window_add_layer(p_window,Layer_text);
-	
 }
 
 void create_progress_bar(P_Window p_window,uint8_t date_flag,uint8_t percent,ProgressType type )
@@ -182,9 +165,7 @@ void create_progress_bar(P_Window p_window,uint8_t date_flag,uint8_t percent,Pro
 		color = GColorWhite;
 
 		if(percent <= 6)
-		{
 			return;
-		}
 	}
 	
 	//绘制进度条
@@ -300,10 +281,8 @@ void update_display(void)
 			//显示睡眠时间
 			//GRect frame_bmp = {{0,57},{14,128}};
 			*p_frame_bmp = 0x800e3900;
-			sprintf(str_buf,"%d:%02d - %d:%02d",week_info[((datetime.wday))].sleepTime.hour,\
-				week_info[((datetime.wday))].sleepTime.min,\
-				week_info[((datetime.wday))].wakeTime.hour,\
-				week_info[((datetime.wday))].wakeTime.min);
+			sprintf(str_buf,"深睡%d%% 清醒%d次", (100 * week_info[datetime.wday].deepSleep + 50) / (week_info[datetime.wday].deepSleep + week_info[datetime.wday].shallowSleep), \
+			    week_info[((datetime.wday))].wakeCount);
 			create_layer_text(p_new_window,str_buf,frame_bmp,GAlignCenter,U_ASCII_ARIAL_14,GColorWhite);
 
 			//显示睡眠质量
@@ -311,7 +290,6 @@ void update_display(void)
 			*p_frame_bmp = 0x0e1a5647;
 			res_get_user_bitmap(get_sleep_level((datetime.wday)),&bmp_temp);
 			create_layer_bmp(p_new_window,&bmp_temp,frame_bmp,GAlignCenter,GColorWhite);
-
 		}
 		else
 		{
