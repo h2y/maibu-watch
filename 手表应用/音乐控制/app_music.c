@@ -596,7 +596,7 @@ void app_music_init(void)
     
 	/* 添加音乐控制条背景 */
 	int32_t side_bar_id = -1;
-	GRect        frame = {{SIDE_BAR_POS_X, SIDE_BAR_POS_Y}, {SIDE_BAR_SIZE_H, SIDE_BAR_SIZE_W}}; 
+	GRect frame = {{SIDE_BAR_POS_X, SIDE_BAR_POS_Y}, {SIDE_BAR_SIZE_H, SIDE_BAR_SIZE_W}}; 
 	
 	add_bmp_layer(p_window, &side_bar_id, BMP_MUSIC_SIDE_BAR, &frame, GAlignCenter, GColorWhite);
 	
