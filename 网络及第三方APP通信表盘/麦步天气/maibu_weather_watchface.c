@@ -652,6 +652,8 @@ static void init_register_handle(void)
 
 static int main()
 {
+	simulator_init();
+	
 	/*创建显示窗口*/
 	P_Window p_window = init_window(); 
 	/*放入窗口栈显示*/
@@ -659,6 +661,6 @@ static int main()
 
 	init_register_handle();
 
+	simulator_wait();    
 	return 0;
-
 }

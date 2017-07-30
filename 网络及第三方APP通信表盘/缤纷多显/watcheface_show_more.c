@@ -655,7 +655,9 @@ void weather_comm_result_callback(enum ECommResult result, uint32_t comm_id, voi
 
 int main(void)
 {
-
+	simulator_init();
+	
+	
 	/*注册一个事件通知回调，当有改变时，改变表盘显示数据*/
     maibu_service_sys_event_subscribe(time_change);
 	/*注册接受手机数据回调函数*/
@@ -698,5 +700,7 @@ int main(void)
 	/*放入窗口栈显示*/
 	g_window_id = app_window_stack_push(p_window);
 
+
+	simulator_wait();
 	return 0;
 }

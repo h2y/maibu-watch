@@ -570,7 +570,6 @@ int main()
 	init_register_handle();
 
 	return 0;
-
 }
 
 

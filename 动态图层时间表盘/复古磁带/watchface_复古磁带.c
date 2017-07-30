@@ -144,7 +144,6 @@ static uint32_t get_number_icon_key[] =
 	RES_BITMAP_WATCHFACE_NUMBER_7, 
 	RES_BITMAP_WATCHFACE_NUMBER_8,  
 	RES_BITMAP_WATCHFACE_NUMBER_9
-
 };
 
 //星期图片数组
@@ -230,20 +229,11 @@ void window_reloading(void)
 	
 }
 
-
-
 /*
- *--------------------------------------------------------------------------------------
- *     function:  app_watch_time_change 
- *    parameter: 
- *       return:
  *  description:  系统时间有变化时，更新时间图层
- * 	      other:
- *--------------------------------------------------------------------------------------
  */
 static void app_watch_time_change(enum SysEventType type, void *context)
 {
-
 	/*时间更改*/
 	if (type == SysEventTypeTimeChange)
 	{
@@ -255,16 +245,10 @@ static void app_watch_time_change(enum SysEventType type, void *context)
 
 
 /*
- *--------------------------------------------------------------------------------------
- *     function:  sec_callback 
- *    parameter: 
- *       return:
  *  description:  每秒更新一次秒表图层
- * 	      other:
- *--------------------------------------------------------------------------------------
  */
 static void sec_callback(date_time_t tick_time, uint32_t millis,void *context)
-{
+{	
   	P_Window p_window = NULL;
 	P_Layer p_layer = NULL;
 	GBitmap bitmap = {0};
@@ -329,6 +313,7 @@ int32_t display_target_layer(P_Window p_window,GRect *temp_p_frame,enum GAlign h
 }
 
 
+
 static P_Window init_window(void)
 {
 	P_Window p_window = NULL;
@@ -336,9 +321,7 @@ static P_Window init_window(void)
 	/*创建一个窗口*/
 	p_window = app_window_create();
 	if (NULL == p_window)
-	{
 		return NULL;
-	}
 
 	/*创建背景图层*/
 	display_target_layer(p_window,&bmp_origin_size_bg,GAlignLeft,GColorWhite,get_WEEK_icon_key,7);
@@ -374,17 +357,9 @@ static P_Window init_window(void)
 
 
 
-/*
- *--------------------------------------------------------------------------------------
- *     function:  main
- *    parameter: 
- *       return:
- *  description:  主程序
- * 	      other:
- *--------------------------------------------------------------------------------------
- */
 int main()
 {
+	simulator_init();
 	
 	app_watch_data(0);
 	/*创建显示表盘窗口*/
@@ -398,5 +373,6 @@ int main()
 		maibu_service_sys_event_subscribe(app_watch_time_change);
 	}
 		
+	simulator_wait();    
 	return 0;
 }
