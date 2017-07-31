@@ -347,8 +347,6 @@ P_Window timer_init_window()
 	g_timer_set_top_time_layer_id = display_target_layerText(p_window,&frame_bmp,GAlignCenter,GColorBlack,text,U_ASCII_ARIAL_12);
 
 
-
-
 	/* 根据状态创建不同界面 */
 	if (g_timer_sec == -1)
 	{
@@ -406,10 +404,9 @@ P_Window timer_init_window()
 	app_window_click_subscribe(p_window, ButtonIdSelect, timer_select_select);
 	app_window_click_subscribe(p_window, ButtonIdBack, timer_select_back);
 	return (p_window);
-
 }
 
-void  time_change (enum SysEventType type, void *context)
+void time_change(enum SysEventType type, void *context)
 {
 	/* 时间更改 */
 	if (type == SysEventTypeTimeChange)

@@ -2,33 +2,34 @@
 #include "maibu_res.h"
 
 
-#define LEVEL_1			120
-#define LEVEL_2			50
-#define LEVEL_3			12
-
 typedef enum ProgressType
 {
-	TYPE_CUR,//当前类型
+	TYPE_CUR,	//当前类型
 	TYPE_OLD_IN,//上周类型,内框
 	TYPE_OLD_EX,//上周类型,外框
 }ProgressType;
 
 typedef struct SleepInfo
 {
-	uint16_t deepSleep;//深睡眠时长,单位分钟
-	uint16_t shallowSleep;//浅睡眠时长,单位分钟
+	uint16_t deepSleep;		//深睡眠时长,单位分钟
+	uint16_t shallowSleep;	//浅睡眠时长,单位分钟
 
-	uint8_t wakeCount;// 醒来的次数
-	uint8_t sleepQuality;//睡眠质量
-	uint8_t flag;//bit 1表示是否需要更新数据
-	uint8_t reserved;//保留位
+	uint8_t wakeCount;		//醒来的次数
+	uint8_t sleepQuality;	//睡眠质量
+	uint8_t flag;			//bit 1表示是否需要更新数据
+	uint8_t reserved;		//保留位
 	
-	struct date_time sleepTime;//入睡时间
-	struct date_time wakeTime;//起床时间
+	struct date_time sleepTime;	//入睡时间
+	struct date_time wakeTime;	//起床时间
 }SleepInfo;
 
+//七天睡眠信息
+static SleepInfo week_info[7] = {0};
 
-SleepInfo week_info[7] = {0};
+//七天中有数据的天数
+static uint8_t week_info_num = 0;
+//七天睡眠平均分钟数
+static uint16_t week_time_avg = 0;
 
 
 //---------------------界面使用的参数---------------------
@@ -63,23 +64,8 @@ uint16_t getSleepMins(uint8_t wday)
 
 bool isSleepTimeEmpty(uint8_t wday)
 {
-	DEBUG("current sleep time : %d\n",((week_info[wday].shallowSleep + week_info[wday].deepSleep > 0)?(false):(true)));
+	//DEBUG("current sleep time : %d\n",((week_info[wday].shallowSleep + week_info[wday].deepSleep > 0)?(false):(true)));
 	return ((week_info[wday].shallowSleep + week_info[wday].deepSleep > 0)?(false):(true));
-}
-
-uint32_t getWeekSleepTime(void)
-{
-	uint8_t i = 0;
-	uint32_t sum = 0;
-	for(i = 0;i < 7;i++)
-	{
-		if((week_info[i].deepSleep) != 0xffff)
-		{
-			sum +=(week_info[i].deepSleep + week_info[i].shallowSleep);
-		}
-	}
-
-	return sum/7;
 }
 
 uint32_t get_sleep_level(uint8_t wday)
@@ -101,25 +87,13 @@ void button_select_back(void *context)
 	}
 	
 }
-void button_select_up(void *context)
+void button_select_up_down(void *context)
 {
 	P_Window p_window = (P_Window)context;		
 	if (p_window == NULL)
 		return;
 
-	BGM_flag = (BGM_flag +1)%2;
-	update_display();
-}
-
-void button_select_down(void *context)
-{
-	P_Window p_window = (P_Window)context;		
-	if (p_window == NULL)
-	{
-		return;	
-	}	
-	BGM_flag = (BGM_flag +2 -1)%2;
-
+	BGM_flag = (BGM_flag + 1)%2;
 	update_display();
 }
 
@@ -205,18 +179,13 @@ void create_progress_bar(P_Window p_window,uint8_t date_flag,uint8_t percent,Pro
 
 void update_display(void)
 {
-
 	P_Window p_window = app_window_stack_get_window_by_id(g_window_id);	
 	if (NULL == p_window)
-	{
 		return;
-	}
 
 	P_Window p_new_window = app_window_create();
 	if (NULL == p_new_window)
-	{
 		return;
-	}
 		
 	//配置参数
     uint16_t array[] = {RES_BITMAP_BMG_1, RES_BITMAP_BMG_2};
@@ -239,7 +208,7 @@ void update_display(void)
 	struct date_time datetime;
 	app_service_get_datetime(&datetime);
 
-	DEBUG("datetime.wday = %d\n",datetime.wday);
+	//DEBUG("datetime.wday = %d\n",datetime.wday);
 	
 	if(BGM_flag == 0)
 	{
@@ -299,7 +268,6 @@ void update_display(void)
 			res_get_user_bitmap(RES_BITMAP_EMPTY_IMAGE,&bmp_temp);
 			create_layer_bmp(p_new_window,&bmp_temp,frame_bmp,GAlignCenter,GColorWhite);
 		}
-
 		
 	}
 	else if(BGM_flag == 1)
@@ -311,9 +279,8 @@ void update_display(void)
 		
 		//getWeekSleepInfo(week_info);
 
-		for(i = 0;i < 7;i++)
+		for(i = 0; i < 7; i++)
 		{
-			
 			if((week_info[i].deepSleep) != 0xffff)
 			{
 				max_sleep_time = (max_sleep_time>(week_info[i].deepSleep + week_info[i].shallowSleep))?(max_sleep_time):(week_info[i].deepSleep + week_info[i].shallowSleep);
@@ -345,56 +312,67 @@ void update_display(void)
 		//GRect frame_bmp = {{0,114},{14,128}};
 		*p_frame_bmp = 0x800e7100;
 		str_buf[0] = '\0';
-		sprintf(str_buf,"7日平均时长%d时%d分",getWeekSleepTime()/60,getWeekSleepTime()%60);
+		if(week_info_num > 0)
+			sprintf(str_buf,"%d日平均时长%d时%d分", week_info_num, week_time_avg/60, week_time_avg%60);
+		else
+			sprintf(str_buf,"暂无统计");
 
 		create_layer_text(p_new_window,str_buf,frame_bmp,GAlignCenter,U_GBK_SIMSUN_12,GColorWhite);
-		
 	}
 
-	
 
 	/*添加窗口按键事件*/
-	app_window_click_subscribe(p_new_window, ButtonIdDown, button_select_down);
-	app_window_click_subscribe(p_new_window, ButtonIdUp, button_select_up);
+	app_window_click_subscribe(p_new_window, ButtonIdDown, button_select_up_down);
+	app_window_click_subscribe(p_new_window, ButtonIdUp, button_select_up_down);
 	app_window_click_subscribe(p_new_window, ButtonIdBack, button_select_back);
 
 	g_window_id = app_window_stack_replace_window(p_window, p_new_window);	
-
-	
 }
 
 P_Window init_window()
 {
 	P_Window p_window = app_window_create();
 	if (NULL == p_window)
-	{
 		return NULL;
-	}
 
 	app_window_click_subscribe(p_window, ButtonIdBack, button_select_back);
-	app_window_click_subscribe(p_window, ButtonIdDown, button_select_down);
-	app_window_click_subscribe(p_window, ButtonIdUp, button_select_up);
+	app_window_click_subscribe(p_window, ButtonIdDown, button_select_up_down);
+	app_window_click_subscribe(p_window, ButtonIdUp, button_select_up_down);
 
 	return p_window;
 }
+
 
 void getWeekSleepInfo(void)
 {
 	struct date_time datetime;
 	app_service_get_datetime(&datetime);
 
-	uint8_t i = 0;
+	//统计清零
+	week_info_num = 0;
 
-	for(i = 0; i<7 ;i++)
+
+	uint32_t oneDaySum, 
+			 sum = 0;
+	uint8_t i = 0,
+		    wday;
+	for(; i<7; i++)
 	{
-		if(maibu_get_sleep_info(i,&week_info[(datetime.wday + 7 - i)%7] ) == 0)
-		//if(maibu_get_sleep_info(0,&week_info[(datetime.wday + 7 - i)%7] ) == 0)
+		wday = (datetime.wday + 7 - i) % 7;
+		maibu_get_sleep_info(i, &week_info[wday] );
+		
+		if( week_info[wday].deepSleep != 0xffff)
 		{
-			DEBUG("read week info Error!!!\n");
+			oneDaySum = week_info[wday].deepSleep + week_info[wday].shallowSleep;
+			if(oneDaySum>0) 
+			{
+				week_info_num++;
+				sum += oneDaySum;
+			}
 		}
-		DEBUG("wake hour = %d\n",week_info[(datetime.wday + 7 - i)%7].wakeTime.hour);
 	}
 	
+	week_time_avg = week_info_num? sum/week_info_num : 0;
 }
 
 
