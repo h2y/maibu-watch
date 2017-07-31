@@ -1,25 +1,5 @@
-#ifdef QT_PLATFORM
-
-#include "../res/app/app_res.h"
-#include "../res/os/os_res.h"
-#include "../os_kernel/os_printk.h"
-#include "../os_kernel/os_timer.h"
-#include "../maibu_sdk/maibu_sdk.h"
-#include "../res/app/app_res.h"
-#include "../os_kernel/os_printk.h"
-#include "../utility/json_checker.h"
-#include "../module/md_ble_comm.h"
-
-#define  LOG_INFO  os_printk
-
-#else
-
 #include "maibu_sdk.h"
 #include "maibu_res.h"
-
-#define  LOG_INFO os_printk
-
-#endif
 
 
 #define SIDE_BAR_POS_X                      104
@@ -72,12 +52,9 @@
 #define ONE_LINE_MAX_SONG_NAME_CHAR_NUM     6 //歌名每行显示最多6个16x16汉字            
 
 
-
-
 static int32_t  g_prev_butn_id  = -1;
 static int32_t  g_next_butn_id  = -1;
 static int32_t  g_pause_butn_id = -1;
-//static int8_t  g_music_icon_id = -1;
 static int32_t  g_time_layer_id = -1;
 static int32_t g_window_id     = -1;
 static int32_t  g_comm_id_music_ctrl  = -1;
@@ -174,7 +151,6 @@ static int send_music_control(enum EMusicControl cmd)
 void music_data_receive_callback(enum ERequestPhone type, void * context)
 {
 	uint8_t *p_tmp = (uint8_t *)context;
-	os_printk("type: %d 0x%x 0x%x 0x%x \r\n", type, p_tmp[0], p_tmp[1], p_tmp[2]);
 	if(type == ERequestPhoneMusicControl)
 	{
 		uint8_t *p = (uint8_t *)context;
@@ -188,7 +164,6 @@ void music_data_receive_callback(enum ERequestPhone type, void * context)
 			memcpy(singer, &p[index], singer_len);
 			index += singer_len;
 			music_set_singer(singer, singer_len);
-			os_printk("singer_len: %d %s \r\n", singer_len, singer);
 		}
 		else
 		{
@@ -202,7 +177,6 @@ void music_data_receive_callback(enum ERequestPhone type, void * context)
 			memcpy(song, &p[index], song_len);
 			index += song_len;
 			music_set_song_name(song, song_len);
-			os_printk("song_len: %d %s\r\n", song_len, song);
 		}
 		else
 		{
@@ -217,7 +191,6 @@ static void music_comm_result_callback(enum ECommResult result, uint32_t comm_id
     if ((result == ECommResultFail) && (comm_id == g_comm_id_music_ctrl))
     {
 		//TODO:失败重试
-        //os_printk("stock data request failed!!!\r\n");
         //send_music_control( );
     }
 }
@@ -226,13 +199,10 @@ static void music_select_back(void *context)
 {
 	P_Window p_window = (P_Window)context;
 	app_window_stack_pop(p_window);
-
-    LOG_INFO("Pop window");
 }
 
 static void music_select_up(void *context)
 {
-    LOG_INFO("music_select_up window id : %d", g_window_id);
 	P_Window p_old_window = app_window_stack_get_window_by_id(g_window_id);
 	
 	if(p_old_window == NULL)
@@ -255,7 +225,6 @@ static void music_select_up(void *context)
 
 static void music_select_down(void *context)
 {
-    LOG_INFO("music_select_down window id : %d", g_window_id);
 	P_Window p_old_window = app_window_stack_get_window_by_id(g_window_id);
 	
 	if(p_old_window == NULL)
@@ -277,7 +246,6 @@ static void music_select_down(void *context)
 
 static void music_select_pause(void *context)
 {
-    LOG_INFO("music_select_pause window id : %d", g_window_id);
 	P_Window p_old_window = app_window_stack_get_window_by_id(g_window_id);
 	
 	if(p_old_window == NULL)
@@ -288,82 +256,31 @@ static void music_select_pause(void *context)
 	//发送音乐控制命令
 	send_music_control(EMusicPause);
 
-#if 1
-	GRect    frame = {PAUSE_BUTN_POS_X, PAUSE_BUTN_POS_Y, PAUSE_BUTN_SIZE_H, PAUSE_BUTN_SIZE_W}; ; 
+	GRect frame = {PAUSE_BUTN_POS_X, PAUSE_BUTN_POS_Y, PAUSE_BUTN_SIZE_H, PAUSE_BUTN_SIZE_W}; ; 
 
 	add_bmp_layer(p_old_window, &g_pause_butn_id, BMP_MUSIC_BLACK, &frame, GAlignCenter, GColorWhite);
 	app_window_update(p_old_window);
 	
 	add_bmp_layer(p_old_window, &g_pause_butn_id, BMP_MUSIC_PLAY_BUTN, &frame, GAlignCenter, GColorWhite);
     app_window_update(p_old_window);
-#else
-	GRect    frame; 
-	GBitmap  bitmap;
-    
-    frame.origin.x = PAUSE_BUTN_POS_X;
-    frame.origin.y = PAUSE_BUTN_POS_Y;
-    frame.size.h   = PAUSE_BUTN_SIZE_H;
-    frame.size.w   = PAUSE_BUTN_SIZE_W;
-    
-    if(g_music_paused)  
-    {
-        g_music_paused = 0;
-        res_get_user_bitmap(BMP_MUSIC_PLAY_BUTN, &bitmap);   
-    }
-    else                
-    {
-        g_music_paused = 1;
-        res_get_user_bitmap(BMP_MUSIC_PAUSE_BUTN, &bitmap);   
-    }
-
-    LayerBitmap  pause_butn_layer_bitmap = {bitmap, frame, GAlignCenter}; 
-    P_Layer      new_pause_butn_layer = app_layer_create_bitmap(&pause_butn_layer_bitmap); 
-    //app_layer_set_bg_color(new_pause_butn_layer, GColorBlack);
-
-    Layer * p_old_layer = app_window_get_layer_by_id(p_old_window, g_pause_butn_id);
-    
-    LOG_INFO("Get old layer: 0x%x, g_pause_butn_id: %d", (uint32_t)p_old_layer, g_pause_butn_id);
-    
-	if(p_old_layer)
-	{
-        LOG_INFO("update pause icon.");
-		g_pause_butn_id = app_window_replace_layer(p_old_window, p_old_layer, new_pause_butn_layer);
-		app_window_update(p_old_window);
-	}
-#endif	
 }
 
 void music_set_singer(char *str, uint16_t len)
 {
-    LOG_INFO("music_set_singer window id : %d", g_window_id);
-    
-	 /*根据窗口ID获取窗口句柄*/
+	/*根据窗口ID获取窗口句柄*/
 	P_Window p_window = app_window_stack_get_window_by_id(g_window_id);
 	if (NULL == p_window)
 	{
-        LOG_INFO("p_window = null");
 		return ;
 	}
     
 	memset(g_singer, 0, 30);
 	memcpy(g_singer, str, len);
-    LOG_INFO("Singer: %s, len: %d", g_singer, len);
     
 	GRect  frame = {SINGER_POS_X, SINGER_POS_Y, SINGER_SIZE_H, SINGER_SIZE_W}; 
 
 	add_text_layer(p_window, &g_singer_id, g_singer, &frame, GAlignLeft, U_GBK_SIMSUN_14, GColorWhite);
 	app_window_update(p_window);
-	
-    // LayerText singer_text = {(str==NULL)?"":(const char*)str, frame, GAlignLeft, U_GBK_SIMSUN_14};
-    // P_Layer p_new_singer_layer = app_layer_create_text(&singer_text);
-    
-    // P_Layer p_old_singer_layer = app_window_get_layer_by_id(p_window, g_singer_id);
-    // if(p_old_singer_layer)
-    // {
-        // LOG_INFO("music_set_singer update windows");
-        // g_singer_id = app_window_replace_layer(p_window, p_old_singer_layer, p_new_singer_layer);
-        // app_window_update(p_window);
-    // }
 }
 
 static int get_utf8_size(char first_char)
@@ -388,17 +305,12 @@ static int get_utf8_size(char first_char)
 
 void music_set_song_name(char *str, uint16_t len)
 {
-    LOG_INFO("music_set_song_name window id : %d", g_window_id);
-    
-	 /*根据窗口ID获取窗口句柄*/
+    /*根据窗口ID获取窗口句柄*/
 	P_Window p_window = app_window_stack_get_window_by_id(g_window_id);
 	if (NULL == p_window)
 	{
-        LOG_INFO("p_window = null");
 		return ;
 	}
-    
-    LOG_INFO("Song Name: %s, len: %d", str, len);
     
 	memset(g_song_name_1, 0, 30);
 	memset(g_song_name_2, 0, 30);
@@ -411,7 +323,6 @@ void music_set_song_name(char *str, uint16_t len)
 	{
 		if(len <= ONE_LINE_MAX_SONG_NAME_CHAR_NUM * 2) //小于6个中文字符
 		{
-			LOG_INFO("less than 6 ch char");
 			memcpy(g_song_name_1, str, len);
 		}
 		else
@@ -421,10 +332,7 @@ void music_set_song_name(char *str, uint16_t len)
 				utf8_char_len = get_utf8_size(str[i]);
 				//LOG_INFO("utf8_char_len: %d", utf8_char_len);
 				if( (utf8_char_len == 0) || (utf8_char_len > 3) )
-				{
-					LOG_INFO("utf8 not recognized, char:%c, 0x%x", str[i], str[i]);
 					break;
-				}
 				else if(utf8_char_len == 1)
 				{
 					char_num++;
@@ -449,8 +357,6 @@ void music_set_song_name(char *str, uint16_t len)
 			}
 		}
 	}
-
-    LOG_INFO("iiiiiiiiiiiiii:%d", i);
     
     GRect  frame;
     frame.origin.x = SONG_NAME_LINE_1_POS_X;
@@ -468,33 +374,6 @@ void music_set_song_name(char *str, uint16_t len)
 	add_text_layer(p_window, &g_song_name_line_2_id, g_song_name_2, &frame, GAlignLeft, U_GBK_SIMSUN_16, GColorWhite);
 	
 	app_window_update(p_window);
-	
-    // LayerText song_name_line_1_text = {(const char*)line_1_buf, frame, GAlignLeft, U_GBK_SIMSUN_16};
-    // P_Layer   p_new_song_name_line_1_layer = app_layer_create_text(&song_name_line_1_text);
-    
-    // frame.origin.x = SONG_NAME_LINE_2_POS_X;
-    // frame.origin.y = SONG_NAME_LINE_2_POS_Y;
-    // frame.size.h   = SONG_NAME_LINE_2_SIZE_H;
-    // frame.size.w   = SONG_NAME_LINE_2_SIZE_W;
-    
-    // LayerText song_name_line_2_text = {(const char*)line_2_buf, frame, GAlignLeft, U_GBK_SIMSUN_16};
-    // P_Layer    p_new_song_name_line_2_layer = app_layer_create_text(&song_name_line_2_text);
-    
-    // P_Layer    p_old_song_name_line_1_layer = app_window_get_layer_by_id(p_window, g_song_name_line_1_id);
-    // if(p_old_song_name_line_1_layer)
-    // {
-        // LOG_INFO("music_set_song_name  app_window_replace_layer line1");
-        // g_song_name_line_1_id = app_window_replace_layer(p_window, p_old_song_name_line_1_layer, p_new_song_name_line_1_layer);
-    // }
-    
-    // P_Layer    p_old_song_name_line_2_layer = app_window_get_layer_by_id(p_window, g_song_name_line_2_id);
-    // if(p_old_song_name_line_2_layer)
-    // {
-        // LOG_INFO("music_set_song_name  app_window_replace_layer line2");
-        // g_song_name_line_2_id = app_window_replace_layer(p_window, p_old_song_name_line_2_layer, p_new_song_name_line_2_layer);
-    // }
-    
-    // app_window_update(p_window);
 }
 
 static void music_time_change(enum SysEventType type, void *context)
@@ -507,10 +386,7 @@ static void music_time_change(enum SysEventType type, void *context)
          /*根据窗口ID获取窗口句柄*/
         P_Window p_window = app_window_stack_get_window_by_id(g_window_id);
         if (NULL == p_window)
-        {
-            LOG_INFO("NULL == p_window");
-            return ;
-        }
+            return;
         
         /*更新时间*/
         char str[20];
@@ -533,54 +409,11 @@ static void music_time_change(enum SysEventType type, void *context)
 	}
 }
 
-// static void music_time_change(enum SysEventType type, void *context)
-// {    
-	// static uint32_t pre_min;
-	
-	// /*时间更改，分变化*/
-	// if (type == SysEventTypeTimeChange)
-	// {
-         // /*根据窗口ID获取窗口句柄*/
-        // P_Window p_window = app_window_stack_get_window_by_id(g_window_id);
-        // if (NULL == p_window)
-        // {
-            // LOG_INFO("NULL == p_window");
-            // return ;
-        // }
-        
-        // /*更新时间*/
-        // char str[20];
-        // struct date_time datetime;
-        // app_service_get_datetime(&datetime);
-
-        // if (pre_min != datetime.min)
-        // {
-			// pre_min = datetime.min;
-			// sprintf(str, "%02d:%02d", datetime.hour, datetime.min);
-			
-			// add_text_layer(p_window, &g_time_layer_id, &str, GRect *p_frame, enum GAlign align, int8_t font, enum GColor color);
-			
-            
-            // P_Layer p_hm_layer = app_window_get_layer_by_id(p_window, g_time_layer_id);
-            // if (NULL == p_hm_layer)
-            // {
-                // return;
-            // }
-
-            // sprintf(str, "%02d:%02d", datetime.hour, datetime.min);
-            // app_layer_set_text_text(p_hm_layer, str);
-        // }
-        
-        // app_window_update(p_window);
-	// }
-// }
-
 
 void app_music_init(void)
 {
 	P_Window  p_window;
 	
-    LOG_INFO("Init Music App.");
 	/*创建窗口，窗口中可以添加唯一的基本元素图层*/
 	p_window = app_window_create();
     
@@ -600,12 +433,6 @@ void app_music_init(void)
 	
 	add_bmp_layer(p_window, &side_bar_id, BMP_MUSIC_SIDE_BAR, &frame, GAlignCenter, GColorWhite);
 	
-	// GBitmap      bitmap;	
-    // res_get_user_bitmap(BMP_MUSIC_SIDE_BAR, &bitmap);
-    // LayerBitmap side_bar_layer_bitmap = {bitmap, frame, GAlignCenter}; 
-    // P_Layer side_bar_layer = app_layer_create_bitmap(&side_bar_layer_bitmap); 
-    // app_window_add_layer(p_window, side_bar_layer);
-    
     /* 添加音乐上一首按钮 */
     frame.origin.x = PREV_BUTN_POS_X;
     frame.origin.y = PREV_BUTN_POS_Y;
@@ -614,11 +441,6 @@ void app_music_init(void)
     
 	add_bmp_layer(p_window, &g_prev_butn_id, BMP_MUSIC_PREV_BUTN, &frame, GAlignCenter, GColorWhite);
 	
-    // res_get_user_bitmap(BMP_MUSIC_PREV_BUTN, &bitmap);
-    // LayerBitmap  prev_butn_layer_bitmap = {bitmap, frame, GAlignCenter}; 
-    // P_Layer      prev_butn_layer = app_layer_create_bitmap(&prev_butn_layer_bitmap); 
-    // g_prev_butn_id = app_window_add_layer(p_window, prev_butn_layer);
-
     /* 添加音乐暂停按钮 */
     frame.origin.x = PAUSE_BUTN_POS_X;
     frame.origin.y = PAUSE_BUTN_POS_Y;
@@ -627,11 +449,7 @@ void app_music_init(void)
     
 	add_bmp_layer(p_window, &g_pause_butn_id, BMP_MUSIC_PLAY_BUTN, &frame, GAlignCenter, GColorWhite);
 	g_music_paused = 0;
-    // res_get_user_bitmap(BMP_MUSIC_PLAY_BUTN, &bitmap);
-    // LayerBitmap  pause_butn_layer_bitmap = {bitmap, frame, GAlignCenter}; 
-    // P_Layer      pause_butn_layer = app_layer_create_bitmap(&pause_butn_layer_bitmap); 
-    // g_pause_butn_id = app_window_add_layer(p_window, pause_butn_layer);
-    
+	
     /* 添加音乐下一首按钮 */
     frame.origin.x = NEXT_BUTN_POS_X;
     frame.origin.y = NEXT_BUTN_POS_Y;
@@ -639,11 +457,6 @@ void app_music_init(void)
     frame.size.w   = NEXT_BUTN_SIZE_W;
     
 	add_bmp_layer(p_window, &g_next_butn_id, BMP_MUSIC_NEXT_BUTN, &frame, GAlignCenter, GColorWhite);
-	
-    // res_get_user_bitmap(BMP_MUSIC_NEXT_BUTN, &bitmap);
-    // LayerBitmap  next_butn_layer_bitmap = {bitmap, frame, GAlignCenter}; 
-    // P_Layer      next_butn_layer = app_layer_create_bitmap(&next_butn_layer_bitmap); 
-    // g_next_butn_id = app_window_add_layer(p_window, next_butn_layer);
 
 	
     /* 添加歌手图层 */
@@ -690,11 +503,7 @@ void app_music_init(void)
 }
 
 
-#ifndef QT_PLATFORM
-
 int main(void)
 {
     app_music_init();
 }
-
-#endif
