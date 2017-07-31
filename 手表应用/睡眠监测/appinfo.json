@@ -89,21 +89,6 @@
       "type": "bmp",
       "name": "RES_BITMAP_NO_9",
       "file": "9.bmp"
-    },
-    {
-      "type": "bmp",
-      "name": "RES_BITMAP_TIME_HOUR",
-      "file": "hour.bmp"
-    },
-    {
-      "type": "bmp",
-      "name": "RES_BITMAP_TIME_MIN",
-      "file": "minute.bmp"
-    },
-    {
-      "type": "bmp",
-      "name": "RES_BITMAP_EMPTY_IMAGE",
-      "file": "EMPTY_IMAGE.bmp"
     }
   ]
 }

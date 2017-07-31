@@ -37,18 +37,6 @@ static int32_t g_window_id = -1;
 
 static uint8_t BGM_flag = 0;
 
-#define APP_DEBUGx
-
-#ifdef APP_DEBUG
-#define DEBUG		os_printk
-#else
-#define DEBUG(...)
-#endif
-
-
-#define  ACT_THRESHOLD_1		10
-#define  ACT_THRESHOLD_2		18
-
 
 void update_display(void);
 
@@ -56,7 +44,6 @@ uint16_t getSleepHours(uint8_t wday)
 {
 	return (week_info[wday].shallowSleep + week_info[wday].deepSleep)/60;
 }
-
 uint16_t getSleepMins(uint8_t wday)
 {
 	return (week_info[wday].shallowSleep + week_info[wday].deepSleep)%60;
@@ -64,8 +51,8 @@ uint16_t getSleepMins(uint8_t wday)
 
 bool isSleepTimeEmpty(uint8_t wday)
 {
-	//DEBUG("current sleep time : %d\n",((week_info[wday].shallowSleep + week_info[wday].deepSleep > 0)?(false):(true)));
-	return ((week_info[wday].shallowSleep + week_info[wday].deepSleep > 0)?(false):(true));
+	return (week_info[wday].shallowSleep + week_info[wday].deepSleep > 0) 
+		? false : true;
 }
 
 uint32_t get_sleep_level(uint8_t wday)
@@ -80,12 +67,8 @@ uint32_t get_sleep_level(uint8_t wday)
 void button_select_back(void *context)
 {
 	P_Window p_window = (P_Window)context;
-	
 	if (NULL != p_window)
-	{
 		app_window_stack_pop(p_window);
-	}
-	
 }
 void button_select_up_down(void *context)
 {
@@ -176,6 +159,15 @@ void create_progress_bar(P_Window p_window,uint8_t date_flag,uint8_t percent,Pro
 	app_window_add_layer(p_window, layer);
 }
 
+//改变一个已有的矩形区域对象
+void change_GRect(GRect *grect, int16_t x, int16_t y, int16_t h, int16_t w)
+{
+	grect->origin.x = x;
+	grect->origin.y = y;
+	grect->size.h = h;
+	grect->size.w = w;
+}
+
 
 void update_display(void)
 {
@@ -207,17 +199,15 @@ void update_display(void)
 	
 	struct date_time datetime;
 	app_service_get_datetime(&datetime);
-
-	//DEBUG("datetime.wday = %d\n",datetime.wday);
 	
 	if(BGM_flag == 0)
 	{
 		//显示睡眠时长
-		uint16_t array_num[] = {RES_BITMAP_NO_0,RES_BITMAP_NO_1,RES_BITMAP_NO_2,RES_BITMAP_NO_3,\
-			RES_BITMAP_NO_4,RES_BITMAP_NO_5,RES_BITMAP_NO_6,RES_BITMAP_NO_7,RES_BITMAP_NO_8,RES_BITMAP_NO_9};
+		uint16_t array_num[] = {RES_BITMAP_NO_0,RES_BITMAP_NO_1,RES_BITMAP_NO_2,RES_BITMAP_NO_3,RES_BITMAP_NO_4,RES_BITMAP_NO_5,RES_BITMAP_NO_6,RES_BITMAP_NO_7,RES_BITMAP_NO_8,RES_BITMAP_NO_9};
 
 		GBitmap bmp_temp;
 		
+		// frame_bmp: 28,31,26,12
 		*p_frame_bmp = 0x0c1a1f1c;
 		res_get_user_bitmap(array_num[getSleepHours((datetime.wday))/10],&bmp_temp);
 		create_layer_bmp(p_new_window,&bmp_temp,frame_bmp,GAlignCenter,GColorWhite);
@@ -226,12 +216,7 @@ void update_display(void)
 		res_get_user_bitmap(array_num[getSleepHours((datetime.wday))%10],&bmp_temp);
 		create_layer_bmp(p_new_window,&bmp_temp,frame_bmp,GAlignCenter,GColorWhite);
 
-		
-		frame_bmp.origin.x += 12;
-		res_get_user_bitmap(RES_BITMAP_TIME_HOUR,&bmp_temp);
-		create_layer_bmp(p_new_window,&bmp_temp,frame_bmp,GAlignCenter,GColorWhite);
-
-		frame_bmp.origin.x += 12;
+		frame_bmp.origin.x += 24;
 		res_get_user_bitmap(array_num[getSleepMins((datetime.wday))/10],&bmp_temp);
 		create_layer_bmp(p_new_window,&bmp_temp,frame_bmp,GAlignCenter,GColorWhite);
 		
@@ -239,34 +224,30 @@ void update_display(void)
 		res_get_user_bitmap(array_num[getSleepMins((datetime.wday))%10],&bmp_temp);
 		create_layer_bmp(p_new_window,&bmp_temp,frame_bmp,GAlignCenter,GColorWhite);
 
-		
-		frame_bmp.origin.x += 12;
-		res_get_user_bitmap(RES_BITMAP_TIME_MIN,&bmp_temp);
-		create_layer_bmp(p_new_window,&bmp_temp,frame_bmp,GAlignCenter,GColorWhite);
 
-
-		if( !isSleepTimeEmpty((datetime.wday)) )
-		{//如果有睡眠数据
-			//显示睡眠时间
-			//GRect frame_bmp = {{0,57},{14,128}};
-			*p_frame_bmp = 0x800e3900;
-			sprintf(str_buf,"深睡%d%% 清醒%d次", (100 * week_info[datetime.wday].deepSleep + 50) / (week_info[datetime.wday].deepSleep + week_info[datetime.wday].shallowSleep), \
-			    week_info[((datetime.wday))].wakeCount);
-			create_layer_text(p_new_window,str_buf,frame_bmp,GAlignCenter,U_ASCII_ARIAL_14,GColorWhite);
-
+		//如果有睡眠数据
+		if( !isSleepTimeEmpty(datetime.wday) )
+		{
 			//显示睡眠质量
-			//GRect frame_bmp = {{71,86},{26,14}};
-			*p_frame_bmp = 0x0e1a5647;
+			change_GRect(&frame_bmp, 57, 62, 26, 14);
 			res_get_user_bitmap(get_sleep_level((datetime.wday)),&bmp_temp);
 			create_layer_bmp(p_new_window,&bmp_temp,frame_bmp,GAlignCenter,GColorWhite);
-		}
-		else
-		{
-			//设置挡板
-			//GRect frame_bmp = {{38,78},{40,27}};
-			*p_frame_bmp = 0x1b284e26;
-			res_get_user_bitmap(RES_BITMAP_EMPTY_IMAGE,&bmp_temp);
-			create_layer_bmp(p_new_window,&bmp_temp,frame_bmp,GAlignCenter,GColorWhite);
+			
+			//显示睡眠时间
+			change_GRect(&frame_bmp, 0, 93, 14, 128);
+			sprintf(str_buf,"%d:%02d - %d:%02d",\
+				week_info[datetime.wday].sleepTime.hour,\
+				week_info[datetime.wday].sleepTime.min,\
+				week_info[datetime.wday].wakeTime.hour,\
+				week_info[datetime.wday].wakeTime.min);
+			create_layer_text(p_new_window,str_buf,frame_bmp,GAlignCenter,U_ASCII_ARIALBD_14,GColorWhite);
+			
+			//显示睡眠数据
+			change_GRect(&frame_bmp, 0, 110, 14, 128);
+			sprintf(str_buf,"深睡%d%% 清醒%d次", \
+				(100 * week_info[datetime.wday].deepSleep + 50) / (week_info[datetime.wday].deepSleep + week_info[datetime.wday].shallowSleep), \
+			    week_info[((datetime.wday))].wakeCount);
+			create_layer_text(p_new_window,str_buf,frame_bmp,GAlignCenter,U_ASCII_ARIAL_14,GColorWhite);
 		}
 		
 	}
@@ -286,7 +267,6 @@ void update_display(void)
 				max_sleep_time = (max_sleep_time>(week_info[i].deepSleep + week_info[i].shallowSleep))?(max_sleep_time):(week_info[i].deepSleep + week_info[i].shallowSleep);
 			}
 		}
-		//DEBUG("MAX = %d\n",max_sleep_time);
 
 		for(i = 1;i <= 7;i++)
 		{
@@ -306,7 +286,6 @@ void update_display(void)
 				create_progress_bar(p_new_window,i-1,percent,TYPE_OLD_IN);
 			}
 
-			//DEBUG(" i = %d --- percent = %d\n",i,percent);
 		}
 
 		//GRect frame_bmp = {{0,114},{14,128}};
