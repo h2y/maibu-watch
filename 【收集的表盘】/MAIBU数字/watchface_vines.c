@@ -1,3 +1,17 @@
+/*
+	首先：程序代码复用率低，需要大面积重构
+	
+	修改：
+		降低表盘刷新频率
+		十二小时显示
+		月日使用文本输出，而不是图片
+		顶部的maibu显示为for hzy，或者disconnected
+		
+	第二阶段：
+		返回键用作音乐控制
+		黑底、白底自动切换
+*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -6,7 +20,7 @@
 #include "maibu_res.h"
 
 #define BACKGROUND_NUM 1 //背景图片个数
-#define TIME_NUM 8 //时间位数
+#define TIME_NUM 8 		 //时间位数
 
 /*图片坐标：第一项为背景图片，后面依次为时间的1~4位*/
 static uint8_t ORIGIN_X[9] = {0, 11, 36, 68, 95, 44, 54, 80, 90};
@@ -52,13 +66,7 @@ int32_t display_target_layerText(P_Window p_window,GRect  *temp_p_frame,enum GAl
 }
 
 /*
- *--------------------------------------------------------------------------------------
- *     function:  app_watch_update
- *    parameter: 
- *       return:
  *  description:  更新时间图层
- * 	      other:
- *--------------------------------------------------------------------------------------
  */
 static void app_watch_update()
 {
@@ -70,30 +78,42 @@ static void app_watch_update()
 	uint8_t new_time[TIME_NUM] = {datetime.hour/10, datetime.hour%10, datetime.min/10, datetime.min%10, datetime.mon/10, datetime.mon%10, datetime.mday/10, datetime.mday%10};
 	uint8_t pos;
 	
+	//12小时制
+	pos = 0;
+	if(datetime.hour > 12)
+		pos = datetime.hour - 12;
+	else if(datetime.hour==0)
+		pos = 12;
+	
+	if(pos != 0) 
+	{
+		new_time[0] = pos/10;
+		new_time[1] = pos%10;
+	}
+	
 	
 	/*根据窗口ID获取窗口句柄*/
 	p_window = app_window_stack_get_window_by_id(g_window);
 	if (p_window == NULL)
-	{
 		return;
-	}
 
 	for (pos=0; pos<TIME_NUM; pos++)
 	{
-			/*获取时间图层句柄*/
-			p_layer = app_window_get_layer_by_id(p_window, g_layer_time[pos]);	
-			if (p_layer != NULL)
+		/*获取时间图层句柄*/
+		p_layer = app_window_get_layer_by_id(p_window, g_layer_time[pos]);	
+		if(p_layer != NULL)
+		{
+			/*更新时间图层图片*/
+			if (pos < 4)
 			{
-				/*更新时间图层图片*/
-				if (pos < 4)
-				{
-					res_get_user_bitmap(bmp_array[new_time[pos]], &bitmap);
-				}else
-				{
-					res_get_user_bitmap(bmp_array[new_time[pos]+10], &bitmap);
-				}
-				app_layer_set_bitmap_bitmap(p_layer, &bitmap);
+				res_get_user_bitmap(bmp_array[new_time[pos]], &bitmap);
 			}
+			else
+			{
+				res_get_user_bitmap(bmp_array[new_time[pos]+10], &bitmap);
+			}
+			app_layer_set_bitmap_bitmap(p_layer, &bitmap);
+		}
 	}
 
 	/*窗口显示*/	
@@ -102,34 +122,19 @@ static void app_watch_update()
 
 
 /*
- *--------------------------------------------------------------------------------------
- *     function:  app_watch_time_change 
- *    parameter: 
- *       return:
  *  description:  系统时间有变化时，更新时间图层
- * 	      other:
- *--------------------------------------------------------------------------------------
  */
 static void app_watch_time_change(enum SysEventType type, void *context)
 {
-
 	/*时间更改*/
 	if (type == SysEventTypeTimeChange)
-	{
 		app_watch_update();	
-	}
 }
 
 
 
 /*
- *--------------------------------------------------------------------------------------
- *     function:  get_layer
- *    parameter: 
- *       return:
  *  description:  生成表盘窗口的各图层
- * 	      other:
- *--------------------------------------------------------------------------------------
  */
 static P_Layer get_layer(uint8_t pos, uint8_t time[])
 {
@@ -140,7 +145,8 @@ static P_Layer get_layer(uint8_t pos, uint8_t time[])
 	if (pos < BACKGROUND_NUM)
 	{
 		res_get_user_bitmap(PIC_BG, &bitmap);
-	}else
+	}
+	else
 	{
 		if (pos < BACKGROUND_NUM + 4)
 		{
@@ -162,13 +168,7 @@ static P_Layer get_layer(uint8_t pos, uint8_t time[])
 
 
 /*
- *--------------------------------------------------------------------------------------
- *     function:  init_watch
- *    parameter: 
- *       return:
  *  description:  生成表盘窗口
- * 	      other:
- *--------------------------------------------------------------------------------------
  */
 static P_Window init_watch(void)
 {
@@ -182,9 +182,7 @@ static P_Window init_watch(void)
 	/*创建一个窗口*/
 	p_window = app_window_create();
 	if (NULL == p_window)
-	{
 		return NULL;
-	}
 
 	/*创建背景图层*/
 	layer_background = get_layer(0, current_time);
@@ -193,14 +191,14 @@ static P_Window init_watch(void)
 	app_window_add_layer(p_window, layer_background);
 
 	/*创建时间图层并添加到窗口*/
-	for (pos=BACKGROUND_NUM; pos<BACKGROUND_NUM+TIME_NUM; pos++)
+	for(pos=BACKGROUND_NUM; pos<BACKGROUND_NUM+TIME_NUM; pos++)
 	{
 		layer_time = get_layer(pos, current_time);
 		g_layer_time[pos-BACKGROUND_NUM] = app_window_add_layer(p_window, layer_time);
 	}
 	
 	
-	GRect temp_frame ;
+	GRect temp_frame;
 	char buff_str[14] = "";
 	/* SJY----------------- 添加日期图层*/
 	temp_frame.origin.x = DATE_ORIGIN_X;
@@ -216,6 +214,7 @@ static P_Window init_watch(void)
 
 	return p_window;
 }
+
 
 
 int main()
