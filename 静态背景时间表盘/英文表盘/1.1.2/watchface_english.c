@@ -1,34 +1,9 @@
-/*
- * =====================================================================================
- * 
- *     Modulename:
- *       Filename:  app_english_watch.c
- *
- *    Description:  英文表盘 
- *    Corporation:
- * 
- *         Author:  gliu (), gliu@damaijiankang.com
- *        Created:  2015年03月30日 19时48分47秒
- *
- * =====================================================================================
- *
- * =====================================================================================
- * 
- *   MODIFICATION HISTORY :
- *    
- *		     DATE :
- *		     DESC :
- * =====================================================================================
- */	
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-
 #include "maibu_sdk.h"
 #include "maibu_res.h"
-
-
 
 
 /*窗口ID, 通过该窗口ID获取窗口句柄*/
@@ -127,9 +102,7 @@ void window_reloading(void)
 			g_app_english_window_id = app_window_stack_replace_window(p_old_window, p_window);
 		}	
 	}
-	
 }
-
 
 
 void app_english_watch_time_change(enum SysEventType type, void *context)
@@ -225,12 +198,10 @@ P_Window init_english_window()
 	maibu_service_sys_event_subscribe(app_english_watch_time_change);
 
 	return p_window;
-
 }
 
 int main()
 {
-
 	/*创建显示英文窗口*/
 	P_Window p_window = init_english_window(); 
 	if (p_window != NULL)
@@ -240,8 +211,4 @@ int main()
 	}
 
 	return 0;
-
 }
-
-
-
