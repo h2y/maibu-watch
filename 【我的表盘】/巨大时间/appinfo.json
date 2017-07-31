@@ -1,0 +1,19 @@
+{
+  "uuid": "d7cac589dd44d71a4cad4c8e381a179b",
+  "name": "巨大时间",
+  "icon": "",
+  "version": "1.0.0",
+  "watchface": "true",
+  "resources": [
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_BG0",
+      "file": "bg0.bmp"
+    },
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_BG1",
+      "file": "bg1.bmp"
+    }
+  ]
+}

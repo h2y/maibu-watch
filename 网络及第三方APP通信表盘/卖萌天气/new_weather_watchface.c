@@ -538,17 +538,14 @@ void init_register_handle(void)
 		g_auto_weather_flag = 1;
 		if(get_time_out_flag(5)||(g_weather_icon_key == 0))
 		{
-			
 			request_get_city_info();
 		}
 	}
 	else 
 	{
-		
 		g_auto_weather_flag = 0;
 		if(get_time_out_flag(5)||(g_weather_icon_key == 0))
 		{
-			
 			memcpy(g_city,g_city_temp,sizeof(g_city_temp));
 			request_weather_info(g_city);
 		}
