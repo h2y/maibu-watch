@@ -6,15 +6,10 @@
   "watchface": "false",
   "sysapp": "2",
   "resources": [
-      {
-        "type": "bmp",
-        "name": "IMAGE_ICON",
-        "file": "icon.bmp"
-      },
-      {
-        "type": "bmp",
-        "name": "RES_BITMAP_WATCHFACE_OFFICIAL_BG01",
-        "file": "official_bg.bmp"
-      }
-      ]
-      }
+    {
+      "type": "bmp",
+      "name": "IMAGE_ICON",
+      "file": "icon.bmp"
+    }
+  ]
+}
