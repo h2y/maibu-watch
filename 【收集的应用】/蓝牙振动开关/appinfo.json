@@ -1,0 +1,20 @@
+{
+  "uuid": "05b10deca253f19767014fab02b97665",
+  "name": "蓝牙振动",
+  "icon": "IMAGE_ICON",
+  "version": "1.0.0",
+  "watchface": "false",
+  "sysapp": "2",
+  "resources": [
+      {
+        "type": "bmp",
+        "name": "IMAGE_ICON",
+        "file": "icon.bmp"
+      },
+      {
+        "type": "bmp",
+        "name": "RES_BITMAP_WATCHFACE_OFFICIAL_BG01",
+        "file": "official_bg.bmp"
+      }
+      ]
+      }
