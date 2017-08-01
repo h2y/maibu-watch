@@ -1,4 +1,3 @@
-//TODO：my own uuid
 //TODO: push window to notify
 
 #include "maibu_res.h"

@@ -1,4 +1,4 @@
-//TODO: 返回键切歌, uuid
+//TODO: 返回键切歌
 
 #include "maibu_res.h"
 #include "maibu_sdk.h"
