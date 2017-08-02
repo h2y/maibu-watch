@@ -5,7 +5,7 @@
 
 
 //默认显示的文字
-#define DEFAULT_WORDS_HZY "~ hello, hzy ~"
+#define DEFAULT_WORDS_HZY "~ nice day ~"
 //蓝牙断开文字
 #define NO_BT_WORDS_HZY "* disconnected *"
 //低电量百分值和文字
@@ -197,8 +197,7 @@ int main()
 {
     //simulator_init();
 
-	P_Window p_window = init_window(); 
-	g_app_window_id = app_window_stack_push(p_window);
+	g_app_window_id = app_window_stack_push( init_window() );
 	
 	/*注册一个事件通知回调，当有时间改变，立即更新时间*/
 	maibu_service_sys_event_subscribe(app_watch_time_change);
