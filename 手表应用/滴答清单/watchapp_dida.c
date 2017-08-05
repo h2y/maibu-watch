@@ -1,32 +1,5 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
-#ifdef LINUX
-#include <unistd.h>
-#include <time.h>
-#include <pthread.h>
-#include "linux_screen_show.h"
-#include "os_store_manage.h"
-#include "os_time.h"
-#include "os_comm.h"
-#include "os_res_bitmap.h"
-#include "os_sys_app_id.h"
-#include "os_memory_manage.h"
-#include "res_user_bitmap.h"
-#include "os_sys_event.h"
-#include "window_stack.h"
-#include "window.h"
-#include "screen_show.h"
-#include "matrix.h"
-#include "plug_status_bar.h"
-#include "res_bitmap_base.h"
-#include "os_sys_notify.h"
-#else
 #include "maibu_sdk.h"
 #include "maibu_res.h"
-#endif
-
 
 
 /*窗口ID, 通过该窗口ID获取窗口句柄*/
@@ -35,8 +8,6 @@ static int32_t g_window_id = -1;
 
 /*图层ID，通过该图层ID获取图层句柄*/
 static int8_t g_layer_menu_id = -1;
-
-
 
 
 
@@ -63,11 +34,11 @@ static int8_t g_layer_menu_id = -1;
 /*菜单项标题元素*/
 #define  MENU_ELEMENT_TITLE_ORIGIN_X 	28
 #define  MENU_ELEMENT_TITLE_ORIGIN_Y	4
-#define  MENU_ELEMENT_TITLE_SIZE_H 	14
-#define  MENU_ELEMENT_TITLE_SIZE_W	100
+#define  MENU_ELEMENT_TITLE_SIZE_H 		14
+#define  MENU_ELEMENT_TITLE_SIZE_W		100
 
 /*菜单项日期元素*/
-#define  MENU_ELEMENT_DATE_ORIGIN_X 	28
+#define  MENU_ELEMENT_DATE_ORIGIN_X 28
 #define  MENU_ELEMENT_DATE_ORIGIN_Y	21
 #define  MENU_ELEMENT_DATE_SIZE_H 	12
 #define  MENU_ELEMENT_DATE_SIZE_W	100
@@ -77,7 +48,7 @@ static int8_t g_layer_menu_id = -1;
 
 /*滴答通讯协议*/
 #define PROTOCOL_UPDATE_LIST			0x01	
-#define PROTOCOL_CHECK_LIST			0x02
+#define PROTOCOL_CHECK_LIST				0x02
 #define PROTOCOL_GET_CHECK_LIST			0x03
 #define PROTOCOL_UPDATE_LIST_ACK		0x21	
 #define PROTOCOL_CHECK_LIST_ACK			0x22
@@ -115,7 +86,7 @@ typedef struct tag_STaskInfo
 	int8_t checked;	//是否已check	0 未check 1 checking  2 checked
 	int8_t used;	//是否已使用	0 未使用 1 已使用
 	int8_t alarm;	//是否已提醒，只针对Android
-	STaskItem item; 
+	STaskItem item;
 }STaskInfo;
 
 
@@ -139,7 +110,7 @@ typedef struct tag_STaskInfoList
 
 
 /*任务列表*/
-static STaskInfoList g_s_task_list = {0}; 
+static STaskInfoList g_s_task_list = { 0 };
 
 
 /*设置菜单当前选择项*/
@@ -152,7 +123,7 @@ static int8_t g_select_index = 0;
 /*
  *--------------------------------------------------------------------------------------
  *     function:  send_check_task
- *    parameter: 
+ *    parameter:
  *       return:
  *  description:  发送完成任务命令
  * 	  other:
@@ -160,8 +131,8 @@ static int8_t g_select_index = 0;
  */
 int32_t send_check_task(int32_t task_id)
 {
-	uint8_t data[8] = {0xdd, 0x01, 0x02, 0x04};
-	memcpy(&data[4], &task_id, sizeof(int32_t));	
+	uint8_t data[8] = { 0xdd, 0x01, 0x02, 0x04 };
+	memcpy(&data[4], &task_id, sizeof(int32_t));
 
 	return (maibu_comm_send_msg(g_link_id, data, sizeof(data)));
 }
@@ -172,14 +143,14 @@ int32_t send_check_task(int32_t task_id)
 void click_down(void *context)
 {
 	P_Window wtmp = (P_Window)context;
-	app_window_set_down_button(wtmp);		
+	app_window_set_down_button(wtmp);
 }
 
 /*向上按键*/
 void click_up(void *context)
 {
 	P_Window wtmp = (P_Window)context;
-	app_window_set_up_button(wtmp);		
+	app_window_set_up_button(wtmp);
 }
 
 /*选择按键*/
@@ -187,7 +158,7 @@ void click_select(void *context)
 {
 	P_LayerMultiMenu plmm = NULL;
 	P_Window wtmp = (P_Window)context;
-		
+
 	P_Layer p_layer = app_window_get_layer_by_id(wtmp, g_layer_menu_id);
 	plmm = (P_LayerMultiMenu)p_layer->layer;
 
@@ -198,10 +169,10 @@ void click_select(void *context)
 
 	/*更改图标，打钩*/
 	GBitmap bmp;
-	res_get_user_bitmap(RES_BITMAP_WATCHAPP_DIDA_CHECK_OK, &bmp);	
-	app_layer_set_multi_menu_item_bitmap(p_layer, plmm->selected, 0, &bmp);		
+	res_get_user_bitmap(RES_BITMAP_WATCHAPP_DIDA_CHECK_OK, &bmp);
+	app_layer_set_multi_menu_item_bitmap(p_layer, plmm->selected, 0, &bmp);
 	app_window_update(wtmp);
-	
+
 }
 
 /*后退按键*/
@@ -215,7 +186,7 @@ void click_back(void *context)
 /*
  *--------------------------------------------------------------------------------------
  *     function:  create_layer_dida_menu
- *    parameter: 
+ *    parameter:
  *       return:
  *  description:  创建滴答菜单图层
  * 	  other:
@@ -232,29 +203,24 @@ P_Layer create_layer_dida_menu(void)
 	memset(&lmm, 0, sizeof(LayerMultiMenu));
 
 	/*设置菜单图层大小*/
-	GPoint menu_p = {LAYER_MENU_ORIGIN_X, LAYER_MENU_ORIGIN_Y};
-	GSize menu_size = {LAYER_MENU_SIZE_H, LAYER_MENU_SIZE_W};
-	GRect menu_frame = {menu_p, menu_size};
-	lmm.frame = menu_frame; 
+	GPoint menu_p = { LAYER_MENU_ORIGIN_X, LAYER_MENU_ORIGIN_Y };
+	GSize menu_size = { LAYER_MENU_SIZE_H, LAYER_MENU_SIZE_W };
+	GRect menu_frame = { menu_p, menu_size };
+	lmm.frame = menu_frame;
 
 	char buf[40] = "";
 	int8_t i = 0;
-
-		
-	
 
 
 	for (i = 0; i < TASK_LIST_MAX_SIZE; i++)
 	{
 		if (g_s_task_list.list[i].used == NOT_USED)
-		{
 			continue;
-		}
 
-		/*非常重要, 要清空*/	
+		/*非常重要, 要清空*/
 		memset(&item, 0, sizeof(MultiMenuItem));
 		memset(buf, 0, sizeof(buf));
-		
+
 		/*添加菜单项中图片元素*/
 		GBitmap bmp;
 		if (g_s_task_list.list[i].checked == CHECKING)
@@ -267,16 +233,16 @@ P_Layer create_layer_dida_menu(void)
 		}
 		element.type = ELEMENT_TYPE_BITMAP;
 		element.content = (void *)&bmp;
-		GRect frame_bmp = {{MENU_ELEMENT_BMP_ORIGIN_X, MENU_ELEMENT_BMP_ORIGIN_Y}, { MENU_ELEMENT_BMP_SIZE_H, MENU_ELEMENT_BMP_SIZE_W}}; 
-		element.frame = frame_bmp; 
+		GRect frame_bmp = { {MENU_ELEMENT_BMP_ORIGIN_X, MENU_ELEMENT_BMP_ORIGIN_Y}, { MENU_ELEMENT_BMP_SIZE_H, MENU_ELEMENT_BMP_SIZE_W} };
+		element.frame = frame_bmp;
 		app_layer_add_multi_menu_element(&item, &element);
 
 		/*添加菜单项中标题元素*/
 		memcpy(buf, g_s_task_list.list[i].item.title, sizeof(g_s_task_list.list[i].item.title));
 		element.type = ELEMENT_TYPE_TEXT;
 		element.content = (void *)buf;
-		GRect frame_title = {{ MENU_ELEMENT_TITLE_ORIGIN_X, MENU_ELEMENT_TITLE_ORIGIN_Y},{ MENU_ELEMENT_TITLE_SIZE_H, MENU_ELEMENT_TITLE_SIZE_W}};
-		element.frame = frame_title; 
+		GRect frame_title = { { MENU_ELEMENT_TITLE_ORIGIN_X, MENU_ELEMENT_TITLE_ORIGIN_Y},{ MENU_ELEMENT_TITLE_SIZE_H, MENU_ELEMENT_TITLE_SIZE_W} };
+		element.frame = frame_title;
 		element.font = U_GBK_SIMSUN_14;
 		app_layer_add_multi_menu_element(&item, &element);
 
@@ -293,16 +259,16 @@ P_Layer create_layer_dida_menu(void)
 		}
 		element.type = ELEMENT_TYPE_TEXT;
 		element.content = (void *)buf;
-		GRect frame_date = {{ MENU_ELEMENT_DATE_ORIGIN_X, MENU_ELEMENT_DATE_ORIGIN_Y},{ MENU_ELEMENT_DATE_SIZE_H, MENU_ELEMENT_DATE_SIZE_W}};
-		element.frame = frame_date; 
+		GRect frame_date = { { MENU_ELEMENT_DATE_ORIGIN_X, MENU_ELEMENT_DATE_ORIGIN_Y},{ MENU_ELEMENT_DATE_SIZE_H, MENU_ELEMENT_DATE_SIZE_W} };
+		element.frame = frame_date;
 		element.font = U_GBK_SIMSUN_12;
 		app_layer_add_multi_menu_element(&item, &element);
 
 
 		/*把菜单项添加到菜单中*/
-		GRect frame_item = {{ MENU_ITEM_ORIGIN_X, MENU_ITEM_ORIGIN_Y},{ MENU_ITEM_SIZE_H, MENU_ITEM_SIZE_W}};
-		item.frame = frame_item; 
-		item.key = i; 
+		GRect frame_item = { { MENU_ITEM_ORIGIN_X, MENU_ITEM_ORIGIN_Y},{ MENU_ITEM_SIZE_H, MENU_ITEM_SIZE_W} };
+		item.frame = frame_item;
+		item.key = i;
 		app_layer_add_multi_menu_item(&lmm, &item);
 	}
 
@@ -322,9 +288,9 @@ P_Layer create_layer_dida_menu(void)
 /*
  *--------------------------------------------------------------------------------------
  *     function:  create_window_dida
- *    parameter:  
+ *    parameter:
  *       return:
- *  description: 创建滴答窗口 
+ *  description: 创建滴答窗口
  * 	  other:
  *--------------------------------------------------------------------------------------
  */
@@ -343,16 +309,15 @@ static P_Window create_window_dida()
 	app_plug_status_bar_add_ble(p_window);
 
 
-	/*创建菜单图层*/	
+	/*创建菜单图层*/
 	P_Layer p_layer_menu = create_layer_dida_menu();
-	if(NULL != p_layer_menu)
+	if (NULL != p_layer_menu)
 	{
 		g_layer_menu_id = app_window_add_layer(p_window, p_layer_menu);
 
 		/*设置选择该图层*/
-		app_window_set_current_selected_layer(p_window, p_layer_menu);	
+		app_window_set_current_selected_layer(p_window, p_layer_menu);
 	}
-
 
 
 	/*创建按键回调*/
@@ -360,7 +325,7 @@ static P_Window create_window_dida()
 	app_window_click_subscribe(p_window, ButtonIdUp, click_up);
 	app_window_click_subscribe(p_window, ButtonIdSelect, click_select);
 	app_window_click_subscribe(p_window, ButtonIdBack, click_back);
-		
+
 
 	return p_window;
 }
@@ -370,7 +335,7 @@ static P_Window create_window_dida()
 /*
  *--------------------------------------------------------------------------------------
  *     function:  send_get_task_list_ack
- *    parameter: 
+ *    parameter:
  *       return:
  *  description:  发送获取任务列表应答
  * 	  other:
@@ -378,20 +343,20 @@ static P_Window create_window_dida()
  */
 int32_t send_get_task_list_ack()
 {
-	uint8_t ack[30] = {0xdd, 0x01, 0x23};
+	uint8_t ack[30] = { 0xdd, 0x01, 0x23 };
 	int8_t i = 0, count = 0;
 
 	for (i = 0; i < TASK_LIST_MAX_SIZE; i++)
 	{
 		if (g_s_task_list.list[i].checked == CHECKING)
 		{
-			memcpy(&ack[4+sizeof(int32_t)*count], (char *)&g_s_task_list.list[i].item.id,  sizeof(int32_t));
+			memcpy(&ack[4 + sizeof(int32_t)*count], (char *)&g_s_task_list.list[i].item.id, sizeof(int32_t));
 			count++;
 		}
 	}
 	ack[3] = sizeof(int32_t)*count;
 
-	return (maibu_comm_send_msg(g_link_id, ack, ack[3]+4)); 
+	return (maibu_comm_send_msg(g_link_id, ack, ack[3] + 4));
 }
 
 
@@ -399,7 +364,7 @@ int32_t send_get_task_list_ack()
 /*
  *--------------------------------------------------------------------------------------
  *     function:  send_update_task_list_ack
- *    parameter: 
+ *    parameter:
  *       return:
  *  description:  发送更新任务列表应答包
  * 	  other:
@@ -407,19 +372,19 @@ int32_t send_get_task_list_ack()
  */
 int32_t send_update_task_list_ack()
 {
-	uint8_t ack[5] = {0xdd, 0x01, 0x21, 0x01, g_error_code_update_ack};
+	uint8_t ack[5] = { 0xdd, 0x01, 0x21, 0x01, g_error_code_update_ack };
 
-	return (maibu_comm_send_msg(g_link_id, ack, sizeof(ack))); 
-}  
+	return (maibu_comm_send_msg(g_link_id, ack, sizeof(ack)));
+}
 
 
 
 /*
  *--------------------------------------------------------------------------------------
  *     function:  update_dida_memu
- *    parameter: 
+ *    parameter:
  *       return:
- *  description:  
+ *  description:
  * 	  other:
  *--------------------------------------------------------------------------------------
  */
@@ -431,11 +396,11 @@ void update_dida_menu()
 	{
 		return;
 	}
-	
-	P_Layer p_old_menu = app_window_get_layer_by_id(p_window, g_layer_menu_id);	
+
+	P_Layer p_old_menu = app_window_get_layer_by_id(p_window, g_layer_menu_id);
 	if (NULL == p_old_menu)
 	{
-		return;	
+		return;
 	}
 	/*重新创建菜单并更新*/
 	P_Layer p_new_layer = create_layer_dida_menu();
@@ -443,9 +408,9 @@ void update_dida_menu()
 	{
 		return;
 	}
-	app_window_replace_layer(p_window, p_old_menu, p_new_layer);	
+	app_window_replace_layer(p_window, p_old_menu, p_new_layer);
 
-	/*窗口显示*/	
+	/*窗口显示*/
 	app_window_update(p_window);
 
 }
@@ -454,7 +419,7 @@ void update_dida_menu()
 /*
  *--------------------------------------------------------------------------------------
  *     function:  msg_recv_callback
- *    parameter: 
+ *    parameter:
  *       return:
  *  description:  处理来此手机第三方APP协议数据
  * 	  other:  协议格式：{(固定标志,0xDD), (协议版本,0x01)，(命令ID,1字节),(命令结构内容，命令ID不同，内容不同)}
@@ -462,11 +427,9 @@ void update_dida_menu()
  */
 void msg_recv_callback(const char *link_id, const uint8_t *buff, uint16_t size)
 {
-
-	memset(g_link_id, 0, sizeof(g_link_id));	
 	strcpy(g_link_id, link_id);
 
-	/*是否滴答协议*/	
+	/*是否滴答协议*/
 	if ((size < 3) || (0xDD != buff[0]) || (0x01 != buff[1]))
 	{
 		return;
@@ -476,7 +439,7 @@ void msg_recv_callback(const char *link_id, const uint8_t *buff, uint16_t size)
 	if (buff[2] == PROTOCOL_UPDATE_LIST)
 	{
 		/*长度不对，或者数据结构不对*/
-		if ((size < 4) || (size != (4+buff[3])))
+		if ((size < 4) || (size != (4 + buff[3])))
 		{
 			/*发送错误应答*/
 			g_error_code_update_ack = -2;
@@ -486,9 +449,9 @@ void msg_recv_callback(const char *link_id, const uint8_t *buff, uint16_t size)
 
 		/*保存任务列表,之前的信息全部清空*/
 		memset(&g_s_task_list, 0, sizeof(STaskInfoList));
-		g_s_task_list.nums = buff[3] / sizeof(STaskItem);	
+		g_s_task_list.nums = buff[3] / sizeof(STaskItem);
 		int i = 0;
-		for(i = 0; i < g_s_task_list.nums; i++)
+		for (i = 0; i < g_s_task_list.nums; i++)
 		{
 			memcpy(&g_s_task_list.list[i].item, &buff[4 + sizeof(STaskItem)*i], sizeof(STaskItem));
 			g_s_task_list.list[i].used = USED;
@@ -501,30 +464,29 @@ void msg_recv_callback(const char *link_id, const uint8_t *buff, uint16_t size)
 	}/*完成任务命令应答*/
 	else if (buff[2] == PROTOCOL_CHECK_LIST_ACK)
 	{
-
-		/*获取完成任务的ID*/	
+		/*获取完成任务的ID*/
 		int32_t id_checked = 0;
 		int8_t id_nums = 0;
-		id_nums = buff[3]/sizeof(int32_t);
-		int8_t i = 0, j = 0;	
-		for(i = 0; i < id_nums; i++)
+		id_nums = buff[3] / sizeof(int32_t);
+		int8_t i = 0, j = 0;
+		for (i = 0; i < id_nums; i++)
 		{
-			memcpy(&id_checked, &buff[4+sizeof(int32_t)*i], sizeof(int32_t));
+			memcpy(&id_checked, &buff[4 + sizeof(int32_t)*i], sizeof(int32_t));
 			for (j = 0; j < TASK_LIST_MAX_SIZE; j++)
 			{
 				if (g_s_task_list.list[j].item.id == id_checked)
 				{
 					memset(&g_s_task_list.list[j], 0, sizeof(STaskInfo));
 				}
-			}	
+			}
 		}
 
-			
-	}/*获取已check任务列表*/	
+
+	}/*获取已check任务列表*/
 	else if (buff[2] == PROTOCOL_GET_CHECK_LIST)
 	{
 		g_comm_id_get_list_ack = send_get_task_list_ack();
-	}	
+	}
 
 	/*更新窗口, 获取已check任务列表也会更新菜单，但是必须在收到通讯成功应答后*/
 	if ((buff[2] == PROTOCOL_CHECK_LIST_ACK) || (buff[2] == PROTOCOL_UPDATE_LIST))
@@ -539,7 +501,7 @@ void msg_recv_callback(const char *link_id, const uint8_t *buff, uint16_t size)
 /*
  *--------------------------------------------------------------------------------------
  *     function:  msg_result_callback
- *    parameter: 
+ *    parameter:
  *       return:
  *  description:  通讯结果回调
  * 	  other:
@@ -547,7 +509,7 @@ void msg_recv_callback(const char *link_id, const uint8_t *buff, uint16_t size)
  */
 void msg_result_callback(enum ECommResult status, uint32_t comm_id, void *context)
 {
-	
+
 	/*如果更新任务应答发送失败，则重发*/
 	if ((ECommResultFail == status) && (comm_id == g_comm_id_update_list_ack))
 	{
@@ -555,17 +517,17 @@ void msg_result_callback(enum ECommResult status, uint32_t comm_id, void *contex
 	}
 
 	/*如果任务完成发送失败，则重发*/
-	if((ECommResultFail == status) && (comm_id == g_comm_id_check_ok))
+	if ((ECommResultFail == status) && (comm_id == g_comm_id_check_ok))
 	{
 
 	}
 
 	/*如果任务完成发送失败，则重发*/
-	if((ECommResultFail == status) && (comm_id == g_comm_id_get_list_ack))
+	if ((ECommResultFail == status) && (comm_id == g_comm_id_get_list_ack))
 	{
 		send_get_task_list_ack();
 	}/*成功，则清除*/
-	else if((ECommResultSuccess == status) && (comm_id == g_comm_id_get_list_ack))
+	else if ((ECommResultSuccess == status) && (comm_id == g_comm_id_get_list_ack))
 	{
 
 #if 0
@@ -592,7 +554,7 @@ static void timer_callback(date_time_t tick_time, uint32_t millis, void *context
 	int8_t i = 0;
 	NotifyParam	param;
 
-	if(maibu_get_phone_type() == PhoneTypeIOS)
+	if (maibu_get_phone_type() == PhoneTypeIOS)
 	{
 		return;
 	}
@@ -607,21 +569,20 @@ static void timer_callback(date_time_t tick_time, uint32_t millis, void *context
 		/*获取当前时间，从1970开始的秒数*/
 //		struct date_time t1;
 //		app_service_get_datetime(&t1);
-		uint32_t seconds = app_get_time(tick_time);		
+		uint32_t seconds = app_get_time(tick_time);
 
-//		printf("now  :%u, item:%u\n", seconds, g_s_task_list.list[i].item.date);
-	
-		/*如果没有提醒过，并且是在120秒以内，则提醒*/	
+
+		/*如果没有提醒过，并且是在120秒以内，则提醒*/
 		if (120 > (seconds - g_s_task_list.list[i].item.date))
 		{
 
 			g_s_task_list.list[i].alarm = HAVE_ALARM;
 			memset(&param, 0, sizeof(NotifyParam));
-			res_get_user_bitmap(RES_BITMAP_WATCHAPP_DIDA_ALARM,  &param.bmp);	
+			res_get_user_bitmap(RES_BITMAP_WATCHAPP_DIDA_ALARM, &param.bmp);
 			sprintf(param.main_title, "%s", "滴答清单");
 			strcpy(param.sub_title, g_s_task_list.list[i].item.title);
-			param.pulse_type = VibesPulseTypeMiddle;		
-			param.pulse_time = 6;		
+			param.pulse_type = VibesPulseTypeMiddle;
+			param.pulse_time = 6;
 			maibu_service_sys_notify(&param);
 
 		}
@@ -634,25 +595,12 @@ static void timer_callback(date_time_t tick_time, uint32_t millis, void *context
 
 int main()
 {
-
-#ifdef LINUX	
-	/*非APP编写*/	
-	screen_init(SCREEN_ROW_NUMS,SCREEN_COL_NUMS);
-	os_store_manage_init();	
-	window_stack_init();
-	set_current_app(0x7dd01);
-	SHOW;
-#endif
-
-
 	/*创建窗口*/
-	P_Window p_window = create_window_dida(); 
-	if(p_window != NULL)
+	P_Window p_window = create_window_dida();
+	if (p_window != NULL)
 	{
 		/*放入窗口栈显示*/
 		g_window_id = app_window_stack_push(p_window);
-
-//		printf("------------------\n");
 
 		/*注册接受数据回调函数*/
 		maibu_comm_register_msg_callback(msg_recv_callback);
@@ -665,80 +613,5 @@ int main()
 	}
 
 
-
-//	printf("11111111111111\n");
-
-#ifdef LINUX
-	SHOW;
-	/*非APP编写*/	
-	while (1)
-	{
-
-		char input;	
-	
-		/*输入操作*/
-		scanf("%c", &input);
-		if (input == 'q')
-		{
-			break;	
-		}
-		else if (input == 'a')
-		{
-			static int s_index = 0;
-			s_index++;
-			uint8_t data[250] = {0xdd,0x01,0x01,0xa0};
-			uint8_t i = 0;
-	
-			STaskItem task;
-			for(i= 0; i < 5; i++)
-			{
-				memset(&task, 0, sizeof(STaskItem));
-				task.id = i;
-				task.date = 16777216;
-				sprintf(task.title, "title:%d", i);	
-				memcpy(&data[4+i*sizeof(STaskItem)], &task, sizeof(STaskItem));
-			}
-
-			msg_recv_callback("link_id_1", data, 4+sizeof(STaskItem)*5);	
-	
-		}else if(input == 'c')
-		{
-			uint8_t data[250] = {0xdd, 0x01, 0x22, 0x04, 0x02, 0x00, 0x00, 0x00};
-			msg_recv_callback("link_id_1", data, 8);	
-		}
-		else if (input == 'g')
-		{
-			uint8_t data[250] = {0xdd, 0x01, 0x03, 0x04, 0x00, 0x00, 0x00, 0x00};
-			msg_recv_callback("link_id_1", data, 8);	
-		}
-		else if(input == 'k')
-		{
-			msg_result_callback(ECommResultSuccess, g_comm_id_get_list_ack, NULL);
-		}
-		else if(input == 'u')
-		{
-			window_stack_button(ButtonIdUp);	
-		}else if(input == 'd')
-		{
-			window_stack_button(ButtonIdDown);	
-		}else if(input == 's')
-		{
-			window_stack_button(ButtonIdSelect);	
-		}
-
-	}	
-
-	app_window_stack_pop(p_window);
-	window_stack_destory();
-	screen_destory();
-	os_store_manage_destory();
-
-	SHOW;
-
-#endif
-
 	return 0;
-
 }
-
-
