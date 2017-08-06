@@ -1,8 +1,8 @@
 {
-  "uuid": "9604fb489a443255fd2d316521bb6cda",
+  "uuid": "7d23478ce28fbdd9d5a59d92b928b356",
   "name": "睡眠监测",
   "icon": "IMAGE_ICON",
-  "version": "1.0.2",
+  "version": "1.0.0",
   "watchface": "false",
   "resources": [
     {

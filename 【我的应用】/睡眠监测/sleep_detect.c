@@ -30,7 +30,7 @@ static int32_t g_window_id = -1;
 //当前浏览页面
 static uint8_t BGM_flag = 0;
 
-
+//函数声明
 static void update_display(void);
 
 
@@ -43,10 +43,6 @@ void button_select_back(void *context)
 }
 void button_select_up_down(void *context)
 {
-	P_Window p_window = (P_Window)context;
-	if (p_window == NULL)
-		return;
-
 	BGM_flag = (BGM_flag + 1) % 2;
 	update_display();
 }
@@ -85,6 +81,7 @@ static void create_progress_bar(P_Window p_window, uint8_t date_flag, uint8_t pe
 		if (percent <= 6)
 			return;
 	}
+
 
 	//绘制进度条
 	GPoint prog_bar_points[4] = { {origin_x + date_flag * 16, 35},
@@ -148,20 +145,24 @@ static void update_display(void)
 	*/
 
 	//七天各自的总睡眠时长
+	//下标0-6 对应 星期1-7
 	static uint16_t weekday_sum[7] = { 0 };
 	//七天睡眠信息
 	static SleepInfo week_info[7] = { 0 };
+	
+	//昨天对应的数组下标
+	uint8_t yesterday_index = (datetime.wday - 1 - 1 + 7) % 7;
+
 
 	uint8_t i = 0, wday;
 	for (; i < 7; i++)
 	{
-		wday = (datetime.wday - 1 + 7 - i) % 7;
+		//当前获取的那一天 对应的数组下标
+		wday = (datetime.wday - 1 - i + 7) % 7;
 		maibu_get_sleep_info(i, &week_info[wday]);
 
 		if (week_info[wday].deepSleep != 0xffff)
-		{
 			weekday_sum[wday] = week_info[wday].deepSleep + week_info[wday].shallowSleep;
-		}
 		else
 			weekday_sum[wday] = 0;
 	}
@@ -191,8 +192,6 @@ static void update_display(void)
 	{
 		//显示睡眠时长
 		uint16_t array_num[] = { RES_BITMAP_NO_0,RES_BITMAP_NO_1,RES_BITMAP_NO_2,RES_BITMAP_NO_3,RES_BITMAP_NO_4,RES_BITMAP_NO_5,RES_BITMAP_NO_6,RES_BITMAP_NO_7,RES_BITMAP_NO_8,RES_BITMAP_NO_9 };
-
-        uint8_t yesterday_index = datetime.wday - 1 - 1;
 
         
 		// frame_bmp: 28,31,26,12
@@ -258,7 +257,7 @@ static void update_display(void)
 		uint8_t week_info_num = 0;
 		//七天睡眠总数、平均数
 		uint16_t week_time_sum = 0,
-			week_time_avg = 0;
+				 week_time_avg = 0;
 
 
 		for (i = 0; i < 7; i++)
@@ -280,7 +279,7 @@ static void update_display(void)
 		{
 			uint8_t percent = weekday_sum[i] * 100 / max_sleep_time;
 
-			if (i < datetime.wday - 1)
+			if (i <= yesterday_index)
 				create_progress_bar(p_new_window, i, percent, TYPE_CUR);
 			else
 			{
