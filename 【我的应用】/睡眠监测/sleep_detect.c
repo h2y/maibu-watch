@@ -64,6 +64,10 @@ static void create_layer_text(P_Window p_window, char* str, GRect* frame, int8_t
 
 static void create_progress_bar(P_Window p_window, uint8_t date_flag, uint8_t percent, ProgressType type)
 {
+	//星期错一位处理
+	date_flag = (date_flag - 1 + 7 ) % 7;
+	
+	
 	uint8_t origin_x = 14, width = 6; //TYPE_OLD_EX
 	enum GColor color = GColorBlack;
 
@@ -145,20 +149,19 @@ static void update_display(void)
 	*/
 
 	//七天各自的总睡眠时长
-	//下标0-6 对应 星期1-7
 	static uint16_t weekday_sum[7] = { 0 };
 	//七天睡眠信息
 	static SleepInfo week_info[7] = { 0 };
 	
 	//昨天对应的数组下标
-	uint8_t yesterday_index = (datetime.wday - 1 - 1 + 7) % 7;
+	uint8_t yesterday_index = datetime.wday;
 
 
 	uint8_t i = 0, wday;
 	for (; i < 7; i++)
 	{
 		//当前获取的那一天 对应的数组下标
-		wday = (datetime.wday - 1 - i + 7) % 7;
+		wday = (datetime.wday - i + 7) % 7;
 		maibu_get_sleep_info(i, &week_info[wday]);
 
 		if (week_info[wday].deepSleep != 0xffff)
