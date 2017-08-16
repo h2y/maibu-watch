@@ -64,10 +64,6 @@ static void create_layer_text(P_Window p_window, char* str, GRect* frame, int8_t
 
 static void create_progress_bar(P_Window p_window, uint8_t date_flag, uint8_t percent, ProgressType type)
 {
-	//星期错一位处理
-	date_flag = (date_flag - 1 + 7 ) % 7;
-	
-	
 	uint8_t origin_x = 14, width = 6; //TYPE_OLD_EX
 	enum GColor color = GColorBlack;
 
@@ -278,16 +274,20 @@ static void update_display(void)
 		week_time_avg = week_info_num ? week_time_sum / week_info_num : 0;
 
 
+		//让星期一为0而不是1
+		uint8_t yesterday_index_fix = (yesterday_index-1+7)%7;
 		for (i = 0; i < 7; i++)
 		{
 			uint8_t percent = weekday_sum[i] * 100 / max_sleep_time;
 
-			if (i <= yesterday_index)
-				create_progress_bar(p_new_window, i, percent, TYPE_CUR);
+			uint8_t i_fix = (i-1+7)%7;
+
+			if (i_fix <= yesterday_index_fix)
+				create_progress_bar(p_new_window, i_fix, percent, TYPE_CUR);
 			else
 			{
-				create_progress_bar(p_new_window, i, percent, TYPE_OLD_EX);
-				create_progress_bar(p_new_window, i, percent, TYPE_OLD_IN);
+				create_progress_bar(p_new_window, i_fix, percent, TYPE_OLD_EX);
+				create_progress_bar(p_new_window, i_fix, percent, TYPE_OLD_IN);
 			}
 		}
 

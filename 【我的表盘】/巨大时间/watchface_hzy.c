@@ -9,7 +9,7 @@
 //蓝牙断开文字
 #define NO_BT_WORDS_HZY "* disconnected *"
 //低电量百分值和文字
-#define LOW_BATTERY_LIMIT_HZY 10
+#define LOW_BATTERY_LIMIT_HZY 20
 #define LOW_BATTERY_WORDS_HZY "> no energy <"
 
 
