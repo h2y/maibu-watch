@@ -1,0 +1,14 @@
+{
+  "uuid": "111cccf738752744a9f6df77cf1fa69d",
+  "name": "滴答表盘",
+  "icon": "",
+  "version": "4.0.0",
+  "watchface": "true",
+  "resources": [
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_BG",
+      "file": "bg.bmp"
+    }
+  ]
+}
