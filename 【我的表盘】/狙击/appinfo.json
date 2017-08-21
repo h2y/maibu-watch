@@ -1,0 +1,14 @@
+{
+  "uuid": "dd77668932bbbf6e7f07bdd6ccf69f34",
+  "name": "狙击",
+  "icon": "",
+  "version": "1.0.0",
+  "watchface": "true",
+  "resources": [
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_BG",
+      "file": "bg.bmp"
+    }
+  ]
+}
