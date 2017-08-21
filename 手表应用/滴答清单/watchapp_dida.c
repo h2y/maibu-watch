@@ -1,3 +1,6 @@
+//此代码与商店最新版 v3.0.1 是一样的
+
+
 #include "maibu_sdk.h"
 #include "maibu_res.h"
 

@@ -1,6 +1,7 @@
-//TODO: 手机任务修改是否会同步到手表，以及同步的时间
-//TODO: 手表上完成当前任务
-//TODO：协议代码精简重构
+//TODO: 手机任务修改不会同步到手表，只会定期发送到手表，且周期较长，使用体验较差
+//TODO: 手表不能发送请求去主动获取当前任务列表
+
+//说明：此表盘必须使用 “滴答清单” App 的 UUID 才能与手机正常通信
 
 #include "maibu_res.h"
 #include "maibu_sdk.h"
@@ -179,8 +180,6 @@ void msg_recv_callback(const char *link_id, const uint8_t *buff, uint16_t size)
 	if ((size < 3) || (0xDD != buff[0]) || (0x01 != buff[1]))
 		return;
 
-	//todo
-	maibu_service_vibes_pulse(VibesPulseTypeShort, 1); 
 
 	/*如果协议是更新任务列表*/
 	if (buff[2] == PROTOCOL_UPDATE_LIST)
@@ -229,13 +228,7 @@ void msg_recv_callback(const char *link_id, const uint8_t *buff, uint16_t size)
 	{
 		g_comm_id_get_list_ack = send_get_task_list_ack();
 	}
-
-	/*更新窗口, 获取已check任务列表也会更新菜单，但是必须在收到通讯成功应答后*/
-	if ((buff[2] == PROTOCOL_CHECK_LIST_ACK) || (buff[2] == PROTOCOL_UPDATE_LIST))
-	{
-		//TODO
-		//update_dida_menu();
-	}
+	
 }
 
 
@@ -256,23 +249,6 @@ void msg_result_callback(enum ECommResult status, uint32_t comm_id, void *contex
 	if ((ECommResultFail == status) && (comm_id == g_comm_id_get_list_ack))
 	{
 		send_get_task_list_ack();
-	}
-	/*成功，则清除*/
-	else if ((ECommResultSuccess == status) && (comm_id == g_comm_id_get_list_ack))
-	{
-#if 0
-		int8_t i = 0;
-		for (i = 0; i < TASK_LIST_MAX_SIZE; i++)
-		{
-			if (g_s_task_list.list[i].checked == CHECKING)
-			{
-				memset(&g_s_task_list.list[i], 0, sizeof(STaskInfo));
-			}
-		}
-
-		/*更新菜单*/
-		update_dida_menu();
-#endif
 	}
 }
 
@@ -299,6 +275,11 @@ static bool get_bt_status()
 
 void button_back_from_watchface(void *context)
 {
+	/*发送错误应答*/
+	g_error_code_update_ack = -1;
+	g_comm_id_update_list_ack = send_update_task_list_ack();
+	
+	update_contents();
 }
 
 
@@ -343,8 +324,8 @@ static P_Window init_window()
 	layertext.font_type = U_ASCII_ARIAL_20;
 	layertext.alignment = GAlignTopRight;
 	
-	grect.origin.x = 24;		grect.origin.y = 56;
-	grect.size.h   = 20;	    grect.size.w   = 33;
+	grect.origin.x = 12;		grect.origin.y = 56;
+	grect.size.h   = 20;	    grect.size.w   = 45;
 	layertext.frame = grect;
 	p_layer = app_layer_create_text(&layertext);
 	g_app_wday_id = app_window_add_layer(p_window, p_layer);
@@ -353,7 +334,7 @@ static P_Window init_window()
 	//图层：日期
 	layertext.alignment = GAlignTopLeft;
 	
-	grect.origin.x = 69;		grect.origin.y = 28;
+	grect.origin.x = 71;		grect.origin.y = 26;
 	grect.size.h   = 20;	    grect.size.w   = 33;
 	layertext.frame = grect;
 	p_layer = app_layer_create_text(&layertext);
@@ -398,7 +379,7 @@ static void update_contents()
 	
 	//修改分钟
 	Layer *p_layer;
-	char str[20];
+	char str[10];
 	
 	p_layer = app_window_get_layer_by_id(p_window, g_app_min_id);
 	sprintf(str, "%02d", datetime.min);
