@@ -1,0 +1,69 @@
+{
+  "uuid": "6fee2766efe7961012fed433c6d3bcc0",
+  "name": "粉笔行书",
+  "icon": "",
+  "version": "1.0.0",
+  "watchface": "true",
+  "resources": [
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_0",
+      "file": "0.bmp"
+    },
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_1",
+      "file": "1.bmp"
+    },
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_2",
+      "file": "2.bmp"
+    },
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_3",
+      "file": "3.bmp"
+    },
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_4",
+      "file": "4.bmp"
+    },
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_5",
+      "file": "5.bmp"
+    },
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_6",
+      "file": "6.bmp"
+    },
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_7",
+      "file": "7.bmp"
+    },
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_8",
+      "file": "8.bmp"
+    },
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_9",
+      "file": "9.bmp"
+    },
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_Q",
+      "file": "q.bmp"
+    },
+    {
+      "type": "bmp",
+      "name": "RES_BITMAP_C",
+      "file": "c.bmp"
+    }
+  ]
+}
